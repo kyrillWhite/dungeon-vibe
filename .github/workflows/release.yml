@@ -1,0 +1,111 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: sudo apt-get update && sudo apt-get install -y build-essential g++ libgl1-mesa-dev libglew-dev libglfw3-dev libglm-dev zip
+      - name: Build
+        run: |
+          make build
+      - name: Package
+        run: |
+          mkdir -p release
+          rm -f release/* || true
+          if [ -f openag_game ]; then cp openag_game release/; fi
+          cp wall.png release/ || true
+          cp floor.png release/ || true
+          NAME=${{ github.event.repository.name }}-${{ github.ref_name }}-linux.tar.gz
+          tar -czf "$NAME" -C release .
+          mv "$NAME" release/
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-build
+          path: release/*.tar.gz
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup MSYS2 + mingw
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          cache: true
+          update: false
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-gcc-libs
+            make
+            zip
+            mingw-w64-x86_64-glm
+            mingw-w64-x86_64-glew
+            mingw-w64-x86_64-glfw
+      - name: Build (MSYS2)
+        shell: msys2 {0}
+        run: |
+          make build
+      - name: Package (MSYS2)
+        shell: msys2 {0}
+        run: |
+          mkdir -p release
+          rm -f release/* || true
+          EXE=$(find . -maxdepth 2 -type f -iname "openag_game.exe" | head -n1 || true)
+          if [ -n "$EXE" ]; then cp "$EXE" release/; fi
+          cp wall.png release/ || true
+          cp floor.png release/ || true
+          cp /mingw64/bin/libgcc_s_seh-1.dll release/ || true
+          cp /mingw64/bin/libstdc++-6.dll release/ || true
+          cp /mingw64/bin/libwinpthread-1.dll release/|| true
+          cp /mingw64/bin/glfw3.dll release/ || true
+          cp /mingw64/bin/glew32.dll release/|| true
+          ZIPNAME=${{ github.event.repository.name }}-${{ github.ref_name }}-windows.zip
+          cd release
+          zip -r "../$ZIPNAME" .
+          cd ..
+          mv "$ZIPNAME" release/
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: release/*.zip
+
+  create-release:
+    needs: [build-ubuntu, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download ubuntu artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ubuntu-build
+          path: artifacts/ubuntu-build
+      - name: Download windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+          path: artifacts/windows-build 
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: "Automated release for ${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/**/*linux.tar.gz
+            artifacts/**/*windows.zip
