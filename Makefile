@@ -1,5 +1,5 @@
 ifeq ($(OS),Windows_NT)
-	UNAME_CHECK := $(shell uname -s 2>NUL)
+	UNAME_CHECK := $(shell uname -s 2>EMPTY)
 	OUT := game.exe
 	ifeq ($(findstring MINGW,$(UNAME_CHECK)),MINGW)
 		LIBS := -lglew32 -lglfw3 -lopengl32
