@@ -6,7 +6,7 @@
 
 // Include stb_image implementation only in this file
 #define STB_IMAGE_IMPLEMENTATION
-#include "libs/stb_image.h"
+#include "stb_image.h"
 
 struct TextureManager {
     unsigned int wallTexture;

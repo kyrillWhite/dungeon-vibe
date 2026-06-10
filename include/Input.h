@@ -1,4 +1,3 @@
-
 #pragma once
 #include <GLFW/glfw3.h>
 #include <string>
@@ -97,4 +96,3 @@ inline void mouse_button_callback(GLFWwindow* window, int button, int action, in
 		}
 	}
 }
-

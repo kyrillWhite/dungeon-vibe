@@ -11,10 +11,12 @@ else
 	LIBS := -lGLEW -lglfw -lGL
 endif
 
+CXXFLAGS := -Iinclude -Ilibs
+
 all: build
 
 run: build
 	./$(OUT)
 
 build:
-	g++ main.cpp -o $(OUT) $(LIBS)
+	g++ -std=c++17 $(CXXFLAGS) src/*.cpp -o $(OUT) $(LIBS)

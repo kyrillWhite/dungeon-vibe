@@ -2,7 +2,12 @@
   "configurations": [
     {
       "name": "Win32",
-      "includePath": ["${workspaceFolder}/**", "C:/msys64/mingw64/include"],
+      "includePath": [
+        "${workspaceFolder}/**",
+        "C:/msys64/mingw64/include",
+        "./include",
+        "./libs"
+      ],
       "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
       "windowsSdkVersion": "10.0.26100.0",
       "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
