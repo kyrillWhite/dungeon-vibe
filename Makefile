@@ -1,11 +1,14 @@
-UNAME := $(shell uname -s)
-
-ifeq ($(findstring MINGW,$(UNAME)),MINGW)
-OUT := openag_game.exe
-LIBS := -lglew32 -lglfw3 -lopengl32
+ifeq ($(OS),Windows_NT)
+	UNAME_CHECK := $(shell uname -s 2>NUL)
+	OUT := game.exe
+	ifeq ($(findstring MINGW,$(UNAME_CHECK)),MINGW)
+		LIBS := -lglew32 -lglfw3 -lopengl32
+	else
+		LIBS := -lglew32 -lglfw3 -lopengl32 -lgdi32
+	endif
 else
-OUT := openag_game
-LIBS := -lGLEW -lglfw -lGL
+	OUT := game
+	LIBS := -lGLEW -lglfw -lGL
 endif
 
 all: build

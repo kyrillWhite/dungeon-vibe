@@ -22,7 +22,7 @@ jobs:
         run: |
           mkdir -p release
           rm -f release/* || true
-          if [ -f openag_game ]; then cp openag_game release/; fi
+          if [ -f game ]; then cp game release/; fi
           cp wall.png release/ || true
           cp floor.png release/ || true
           NAME=${{ github.event.repository.name }}-${{ github.ref_name }}-linux.tar.gz
@@ -61,7 +61,7 @@ jobs:
         run: |
           mkdir -p release
           rm -f release/* || true
-          EXE=$(find . -maxdepth 2 -type f -iname "openag_game.exe" | head -n1 || true)
+          EXE=$(find . -maxdepth 2 -type f -iname "game.exe" | head -n1 || true)
           if [ -n "$EXE" ]; then cp "$EXE" release/; fi
           cp wall.png release/ || true
           cp floor.png release/ || true
