@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "Display.h" // ИСПРАВЛЕНИЕ: Подключаем для доступа к глобальному MAP_SIZE
+#include "Display.h" // For access to global MAP_SIZE
 
 struct Camera {
     glm::vec3 pos;
@@ -16,7 +16,7 @@ struct Camera {
     bool isCursorLocked;
 
     Camera() {
-        // Начальная позиция теперь перезаписывается в main.cpp через dungeon.spawnPos
+        // Initial position is overwritten in main.cpp via dungeon.spawnPos
         pos            = glm::vec3(0.0f, 0.5f, 0.0f);
         front          = glm::vec3(0.0f, 0.0f, -1.0f);
         up             = glm::vec3(0.0f, 1.0f,  0.0f);
@@ -26,7 +26,7 @@ struct Camera {
         isCursorLocked = true;
     }
 
-    // ИСПРАВЛЕНИЕ: Передаем актуальный размер массива MAP_SIZE вместо статичного [16][16]
+    // Pass the actual MAP_SIZE array size instead of static [16][16]
     void processInput(GLFWwindow* window, float deltaTime, int grid[MAP_SIZE][MAP_SIZE]) {
         if (!isCursorLocked) return;
 
@@ -45,11 +45,11 @@ struct Camera {
 
         moveDir = glm::normalize(moveDir);
 
-        float r = 0.2f; // Радиус коллизии игрока
+        float r = 0.2f; // Player collision radius
         float offsetsX[] = { -r, r, -r, r };
         float offsetsZ[] = { -r, -r, r, r };
 
-        // --- ШАГ 1: ДВИЖЕНИЕ И ПРОВЕРКА ПО ОСИ X ---
+        // --- STEP 1: MOVEMENT AND X AXIS COLLISION CHECK ---
         float targetX = pos.x + moveDir.x * speed;
         bool collisionX = false;
         
@@ -57,7 +57,7 @@ struct Camera {
             int checkX = static_cast<int>(targetX + offsetsX[i]);
             int checkZ = static_cast<int>(pos.z + offsetsZ[i]);
 
-            // ИСПРАВЛЕНИЕ: Проверка границ теперь динамически зависит от MAP_SIZE
+            // Boundary check now dynamically depends on MAP_SIZE
             if (checkX < 0 || checkX >= MAP_SIZE || checkZ < 0 || checkZ >= MAP_SIZE || grid[checkX][checkZ] == 1) {
                 collisionX = true;
                 break;
@@ -67,7 +67,7 @@ struct Camera {
             pos.x = targetX;
         }
 
-        // --- ШАГ 2: ДВИЖЕНИЕ И ПРОВЕРКА ПО ОСИ Z ---
+        // --- STEP 2: MOVEMENT AND Z AXIS COLLISION CHECK ---
         float targetZ = pos.z + moveDir.z * speed;
         bool collisionZ = false;
 
@@ -75,7 +75,7 @@ struct Camera {
             int checkX = static_cast<int>(pos.x + offsetsX[i]);
             int checkZ = static_cast<int>(targetZ + offsetsZ[i]);
 
-            // ИСПРАВЛЕНИЕ: Проверка границ теперь динамически зависит от MAP_SIZE
+            // Boundary check now dynamically depends on MAP_SIZE
             if (checkX < 0 || checkX >= MAP_SIZE || checkZ < 0 || checkZ >= MAP_SIZE || grid[checkX][checkZ] == 1) {
                 collisionZ = true;
                 break;

@@ -63,26 +63,25 @@ int main() {
          1.0f,  1.0f,  0.0f, 1.0f, 1.0f
     };
 
-    // 1. Создаем буфер Стен (Stride = 5 float)
-    // 1. Настройка VAO/VBO Стен (Stride = 6)
+    // Setup VAO/VBO for walls (Stride = 6)
     unsigned int wallVAO, wallVBO;
     glGenVertexArrays(1, &wallVAO); glGenBuffers(1, &wallVBO);
     glBindVertexArray(wallVAO); glBindBuffer(GL_ARRAY_BUFFER, wallVBO);
     glBufferData(GL_ARRAY_BUFFER, dungeon.wallVertices.size() * sizeof(float), dungeon.wallVertices.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0); glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float))); glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(5 * sizeof(float))); glEnableVertexAttribArray(2); // Атрибут AO
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(5 * sizeof(float))); glEnableVertexAttribArray(2); // AO attribute
 
-    // 2. Настройка VAO/VBO Пола и Потолка (Stride = 6)
+    // Setup VAO/VBO for floor and ceiling (Stride = 6)
     unsigned int floorVAO, floorVBO;
     glGenVertexArrays(1, &floorVAO); glGenBuffers(1, &floorVBO);
     glBindVertexArray(floorVAO); glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
     glBufferData(GL_ARRAY_BUFFER, dungeon.floorCeilVertices.size() * sizeof(float), dungeon.floorCeilVertices.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0); glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float))); glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(5 * sizeof(float))); glEnableVertexAttribArray(2); // Атрибут AO
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(5 * sizeof(float))); glEnableVertexAttribArray(2); // AO attribute
 
-    // 3. Создаем буфер Экранного Квадрата (для Апскейла)
+    // Setup screen quad buffer (for upscaling)
     unsigned int quadVAO, quadVBO;
     glGenVertexArrays(1, &quadVAO); glGenBuffers(1, &quadVBO);
     glBindVertexArray(quadVAO); glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
@@ -91,10 +90,10 @@ int main() {
     // location 1 is a vec3: we store (z, u, v) in the quad vertex layout -> offset = 2*sizeof(float)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float))); glEnableVertexAttribArray(1);
 
-    // Инициализируем наши текстуры через менеджер
+    // Initialize textures through manager
     textures.init();
 
-    // загрузить настройки из файла (если есть)
+    // Load settings from file (if exists)
     Settings::loadFromFile();
 
     // apply anisotropic filtering to loaded textures (if supported)
@@ -113,7 +112,7 @@ int main() {
         }
     }
 
-    // Настройка Фреймбуфера низкого разрешения: цвет + глубина как текстура
+    // Setup low-resolution framebuffer: color + depth as texture
     unsigned int framebuffer, textureColorBuffer, depthTexture;
     glGenFramebuffers(1, &framebuffer); glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
@@ -161,7 +160,7 @@ int main() {
 
         camera.processInput(window, deltaTime, dungeon.grid);
 
-        // --- РАСЧЕТ ТУМАНА ВОЙНЫ НА МИНΙΚАРТЕ ---
+        // --- FOG OF WAR CALCULATION FOR MINIMAP ---
         {
             int pX = static_cast<int>(camera.pos.x);
             int pZ = static_cast<int>(camera.pos.z);
@@ -189,7 +188,7 @@ int main() {
 
         bool isTabPressed = (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS);
         
-        // --- ИСПРАВЛЕННЫЙ ЭТАП 1: РЕНДЕР 3D В НИЗКОЕ РАЗРЕШЕНИЕ ---
+        // --- STAGE 1: RENDER 3D TO LOW RESOLUTION ---
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
         glViewport(0, 0, GAME_WIDTH, GAME_HEIGHT);
         glEnable(GL_DEPTH_TEST);
@@ -197,21 +196,21 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
     
-        // --- ЭТАП 3: SSAO / DITHER PASS ---
+        // --- STAGE 3: SSAO / DITHER PASS ---
         glUseProgram(shader3D);
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
 
-        // Используем FOV из настроек
+        // Use FOV from settings
         float aspect = (float)GAME_WIDTH / (float)GAME_HEIGHT;
         glm::mat4 projection = glm::perspective(glm::radians(Settings::FOV_DEGREES), aspect, 0.05f, 100.0f);
 
-        // apply projection
+        // Apply projection matrices
         glUniformMatrix4fv(glGetUniformLocation(shader3D, "model"), 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(glGetUniformLocation(shader3D, "view"), 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(shader3D, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
-        // Передаём параметры освещения из Settings
+        // Pass lighting parameters from Settings
         glUniform3fv(glGetUniformLocation(shader3D, "cameraPos"), 1, glm::value_ptr(camera.pos));
         glUniform1f(glGetUniformLocation(shader3D, "lightNear"), Settings::LIGHT_RADIUS_NEAR);
         glUniform1f(glGetUniformLocation(shader3D, "lightFar"), Settings::LIGHT_RADIUS_FAR);
@@ -252,22 +251,21 @@ int main() {
         glUniform3fv(glGetUniformLocation(shader3D, "torchColor"), 1, glm::value_ptr(torchColor));
         glUniform1f(glGetUniformLocation(shader3D, "torchFlicker"), torchFlicker);
 
-        // 1. Отрисовка геометрии Стен
+        // Draw wall geometry
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textures.wallTexture);
-        // draw walls
         glUniform1i(glGetUniformLocation(shader3D, "texSampler"), 0);
         glBindVertexArray(wallVAO);
         glDrawArrays(GL_TRIANGLES, 0, dungeon.wallVertices.size() / 6);
 
-        // draw floor/ceiling
+        // Draw floor and ceiling
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textures.floorTexture);
         glUniform1i(glGetUniformLocation(shader3D, "texSampler"), 0);
         glBindVertexArray(floorVAO);
         glDrawArrays(GL_TRIANGLES, 0, dungeon.floorCeilVertices.size() / 6);
 
-        // --- ЭТАП 2.5: НАКЛАДКА МИНИКАРТЫ В НИЗКОМ РАЗРЕШЕНИИ (ПОСЛЕ 3D, ДО SSAO) ---
+        // --- STAGE 2.5: MINIMAP OVERLAY AT LOW RESOLUTION (AFTER 3D, BEFORE SSAO) ---
         // Render minimap into the low-res color buffer so it gets processed by SSAO/dither
         // Do not write to depth buffer to avoid occluding 3D geometry
         glDisable(GL_DEPTH_TEST);
@@ -277,11 +275,11 @@ int main() {
         float currentAlpha = isTabPressed ? 0.5f : 0.75f;
         glUniform1f(glGetUniformLocation(shader2D, "mapAlpha"), currentAlpha);
         minimap.render(shader2D, dungeon, camera, isTabPressed, currentAlpha, GAME_WIDTH, GAME_HEIGHT);
-        // restore depth writes and depth test
+        // Restore depth writes and depth test
         glDepthMask(GL_TRUE);
         glEnable(GL_DEPTH_TEST);
 
-        // --- ЭТАП 2: SSAO / DITHER PASS ---
+        // --- STAGE 2: SSAO / DITHER PASS ---
         // Run SSAO shader reading the low-res color + depth, write into aoTexture
         glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
         glViewport(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -290,12 +288,12 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderSSAO);
-        // bind inputs
+        // Bind input textures
         glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
         glUniform1i(glGetUniformLocation(shaderSSAO, "colorTex"), 0);
         glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, depthTexture);
         glUniform1i(glGetUniformLocation(shaderSSAO, "depthTex"), 1);
-        // camera projection range (matches projection used for 3D pass)
+        // Camera projection range (matches projection used for 3D pass)
         glUniform1f(glGetUniformLocation(shaderSSAO, "projNear"), 0.05f);
         glUniform1f(glGetUniformLocation(shaderSSAO, "projFar"), 100.0f);
         glUniform1f(glGetUniformLocation(shaderSSAO, "ambientLight"), Settings::AMBIENT_LIGHT);
@@ -307,13 +305,13 @@ int main() {
         glBindVertexArray(quadVAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        // --- ЭТАП 3: РАСТЯГИВАНИЕ (АПСКЕЙЛ) НА ЭКРАН ---
+        // --- STAGE 3: UPSCALE TO SCREEN ---
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(display.renderX, display.renderY, display.renderW, display.renderH);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // draw upscaled (SSAO/dithered) texture to screen
+        // Draw upscaled (SSAO/dithered) texture to screen
         glUseProgram(shader2D);
         glUniform1i(glGetUniformLocation(shader2D, "useTexture"), 1);
         glUniform1i(glGetUniformLocation(shader2D, "screenTexture"), 0);
@@ -331,10 +329,10 @@ int main() {
         glfwPollEvents();
     }
 
-    // при выходе сохранить (на всякий случай)
+    // Save settings on exit (just in case)
     Settings::saveToFile();
 
-    // Полная очистка памяти перед выходом
+    // Full memory cleanup before exit
     minimap.cleanup();
     textures.cleanup();
     glDeleteVertexArrays(1, &wallVAO); glDeleteBuffers(1, &wallVBO);

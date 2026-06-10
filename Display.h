@@ -9,7 +9,7 @@ inline const int GAME_WIDTH = 240;
 inline const int GAME_HEIGHT = 144;
 inline const int MAP_SIZE = 48;
 
-inline const bool DEBUG_WHITEBOX_MODE = false; // временно, main.cpp теперь берёт реальное значение из Settings
+inline const bool DEBUG_WHITEBOX_MODE = false; // Temporary, main.cpp now takes real value from Settings
 
 struct Display {
     int winW;

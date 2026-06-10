@@ -52,15 +52,15 @@ struct Minimap {
         float denomH = static_cast<float>(targetH);
 
         if (fullScreenMode) {
-            // --- РЕЖИМ TAB: Полноэкранный оверлей по центру ---
+            // --- TAB MODE: Full-screen overlay at center ---
             centerPixX = denomW / 2.0f;
             centerPixY = denomH / 2.0f;
             TILE_SIZE = 4.0f; 
             pSize = 4.0f;     
         } else {
-            // --- СТАНДАРТНЫЙ РЕЖИМ HUD: Квадратная миникарта в верхнем левом углу ---
+            // --- STANDARD HUD MODE: Square minimap in top left corner ---
             
-            // ИСПРАВЛЕНИЕ: Увеличиваем размер рамки с 40.0f до 60.0f пикселей (под 240x144 это отличный размер)
+            // Increase frame size from 40.0f to 60.0f pixels (great for 240x144)
             const float HUD_BOX_SIZE = 60.0f; 
             const float HUD_PADDING = 6.0f;   
 
@@ -75,11 +75,11 @@ struct Minimap {
             centerPixX = padX + (boxW / 2.0f);
             centerPixY = padY + (boxH / 2.0f);
             
-            // ИСПРАВЛЕНИЕ: Увеличиваем масштаб тайлов с 2.0f до 3.0f, чтобы лабиринт стал крупнее
+            // Increase tile scale from 2.0f to 3.0f to make maze larger
             TILE_SIZE = 3.0f; 
-            pSize = 4.0f;     // Стрелочка игрока тоже чуть крупнее для читаемости
+            pSize = 4.0f;     // Player arrow also slightly larger for readability
 
-            // Включаем Scissor Test для обрезки лабиринта по границам рамки
+            // Enable Scissor Test to clip maze within frame
             glEnable(GL_SCISSOR_TEST);
             glScissor(
                 static_cast<int>(padX),
@@ -88,13 +88,13 @@ struct Minimap {
                 static_cast<int>(boxH)
             );
 
-            // --- ДОБАВЛЕНИЕ НЕПРОЗРАЧНОГО ФОНА ---
-            // Сохраняем текущую прозрачность, установленную в main.cpp
+            // --- ADD OPAQUE BACKGROUND ---
+            // Save current alpha set in main.cpp
             int alphaLocation = glGetUniformLocation(shader2D, "mapAlpha");
-            // Принудительно выставляем 1.0f (100% непрозрачность) для заднего фона
+            // Force to 1.0f (100% opaque) for background
             glUniform1f(alphaLocation, 1.0f);
 
-            // Вычисляем координаты углов чёрной подложки в NDC
+            // Calculate black background quad corners in NDC
             float bx0 = pixelToNdcX(padX, denomW);
             float bx1 = pixelToNdcX(padX + boxW, denomW);
             float by0 = pixelToNdcY(padY, denomH);
@@ -107,7 +107,7 @@ struct Minimap {
                 bx0, by0, bgR, bgG, bgB,   bx1, by1, bgR, bgG, bgB,   bx1, by0, bgR, bgG, bgB
             };
 
-            // Быстро отправляем и рендерим только чёрный квадрат фона
+            // Quickly send and render only black background quad
             glBindVertexArray(VAO);
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferData(GL_ARRAY_BUFFER, sizeof(bgQuad), bgQuad, GL_STREAM_DRAW);
@@ -115,15 +115,15 @@ struct Minimap {
             glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float))); glEnableVertexAttribArray(1);
             glDrawArrays(GL_TRIANGLES, 0, 6);
 
-            // Возвращаем исходную прозрачность для отрисовки стен и стрелочки
+            // Restore original alpha for drawing walls and arrow
             glUniform1f(alphaLocation, currentAlpha);
         }
 
-        // Текущие координаты игрока
+        // Player current coordinates
         float pX = camera.pos.x;
         float pZ = camera.pos.z;
 
-        // 1. Геометрия стен (Использует новые увеличенные TILE_SIZE)
+        // 1. Wall geometry (Uses new increased TILE_SIZE)
         for (int x = 0; x < MAP_SIZE; x++) {
             for (int z = 0; z < MAP_SIZE; z++) {
                 if (map.grid[x][z] == 1 && map.visible[x][z] == 1) {
@@ -150,7 +150,7 @@ struct Minimap {
             }
         }
 
-        // 2. Геометрия игрока
+        // 2. Player geometry
         float angle = std::atan2(-camera.front.z, camera.front.x);
         
         float pXTop   = centerPixX + std::cos(angle) * pSize;
@@ -172,7 +172,7 @@ struct Minimap {
         };
         vertices.insert(vertices.end(), std::begin(playerTri), std::end(playerTri));
 
-        // Отправка и отрисовка лабиринта и игрока поверх фона
+        // Send and render maze and player over background
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STREAM_DRAW);
@@ -188,7 +188,7 @@ struct Minimap {
 
         (void)verts;
 
-        // Отключаем scissor, чтобы не сломать апскейл экрана
+        // Disable scissor to avoid breaking screen upscale
         if (!fullScreenMode) {
             glDisable(GL_SCISSOR_TEST);
         }

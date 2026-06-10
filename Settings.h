@@ -14,7 +14,7 @@ namespace Settings {
 
 inline const char * SETTINGS_FILE = "settings.cfg";
 
-// Значения по умолчанию
+// Default values
 inline float LIGHT_RADIUS_NEAR        = 1.0f;
 inline float LIGHT_RADIUS_FAR         = 5.0f;
 inline float AMBIENT_LIGHT            = 0.01f;
@@ -31,7 +31,7 @@ inline float DITHER_AMOUNT            = 0.06f;  // legacy, kept but not used for
 
 struct Meta { float minv, maxv; const char* desc; };
 
-// Ограничения
+// Limits
 inline const Meta M_LIGHT_RADIUS_NEAR         = {0.0f, 50.0f, "near radius"};
 inline const Meta M_LIGHT_RADIUS_FAR          = {0.01f, 100.0f, "far radius"};
 inline const Meta M_AMBIENT_LIGHT             = {0.0f, 1.0f, "ambient"};
@@ -70,11 +70,11 @@ inline void applySettingNoSave(const std::string &nameUpper, float value) {
     }
 }
 
-// save current settings to file (human-readable key=value, comments allowed)
+// Save current settings to file (human-readable key=value, comments allowed)
 inline bool saveToFile(const std::string &path = std::string(SETTINGS_FILE)) {
     std::ofstream ofs(path, std::ofstream::out | std::ofstream::trunc);
     if (!ofs.is_open()) return false;
-    ofs << "# settings saved\n";
+    ofs << "# Settings saved\n";
     ofs << "LIGHT_RADIUS_NEAR=" << LIGHT_RADIUS_NEAR << "\n";
     ofs << "LIGHT_RADIUS_FAR=" << LIGHT_RADIUS_FAR << "\n";
     ofs << "AMBIENT_LIGHT=" << AMBIENT_LIGHT << "\n";
@@ -109,7 +109,7 @@ inline std::string setByName(const std::string &name, float value) {
 
 inline std::string getByName(const std::string &name) {
     std::string n = name;
-    // normalize
+    // Normalize
     n.erase(n.begin(), std::find_if(n.begin(), n.end(), [](int ch){ return !std::isspace(ch); }));
     n.erase(std::find_if(n.rbegin(), n.rend(), [](int ch){ return !std::isspace(ch); }).base(), n.end());
     for (auto &c: n) c = std::toupper((unsigned char)c);
@@ -155,7 +155,7 @@ inline bool loadFromFile(const std::string &path = std::string(SETTINGS_FILE)) {
     if (!ifs.is_open()) return false;
     std::string line;
     while (std::getline(ifs, line)) {
-        // trim
+        // Trim
         auto l = line;
         l.erase(l.begin(), std::find_if(l.begin(), l.end(), [](int ch){ return !std::isspace(ch); }));
         if (l.empty() || l[0]=='#') continue;
@@ -163,7 +163,7 @@ inline bool loadFromFile(const std::string &path = std::string(SETTINGS_FILE)) {
         if (pos == std::string::npos) continue;
         std::string key = l.substr(0,pos);
         std::string val = l.substr(pos+1);
-        // trim both
+        // Trim both
         auto trim = [](std::string &s){
             s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch){ return !std::isspace(ch); }));
             s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch){ return !std::isspace(ch); }).base(), s.end());
@@ -176,7 +176,7 @@ inline bool loadFromFile(const std::string &path = std::string(SETTINGS_FILE)) {
             for (auto &c: ku) c = std::toupper((unsigned char)c);
             applySettingNoSave(ku, v);
         } catch(...) {
-            // skip invalid
+            // Skip invalid values
         }
     }
     return true;

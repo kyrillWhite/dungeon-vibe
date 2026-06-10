@@ -5,7 +5,7 @@ const char* vertexShaderSource = R"glsl(
     #version 330 core
     layout (location = 0) in vec3 aPos;
     layout (location = 1) in vec2 aTexCoords;
-    layout (location = 2) in float aAO; // Наш честный вершинный Ambient Occlusion
+    layout (location = 2) in float aAO; // Our honest vertex Ambient Occlusion
     
     out vec2 TexCoords;
     out vec3 FragPos;
@@ -23,7 +23,7 @@ const char* vertexShaderSource = R"glsl(
     }
 )glsl";
 
-// Добавленный экранный вершинный шейдер для квадрата (используется в SSAO / апскейл пассах)
+// Screen vertex shader for quad (used in SSAO / upscale passes)
 const char* screenVertexShaderSource = R"glsl(
     #version 330 core
     layout (location = 0) in vec2 aPos;
@@ -45,7 +45,7 @@ const char* fragmentShaderSource = R"glsl(
     
     in vec2 TexCoords;
     in vec3 FragPos;
-    in float AO; // Наш честный вершинный Ambient Occlusion
+    in float AO; // Our honest vertex Ambient Occlusion
     
     uniform sampler2D texSampler;
     uniform vec3 cameraPos;
@@ -53,16 +53,16 @@ const char* fragmentShaderSource = R"glsl(
     uniform float lightNear;
     uniform float lightFar;
     uniform float ambientLight;
-    uniform float lightSharpness; // управляет "центральной" резкостью
-    uniform float lightTransitionSoftness; // 0..1: смешение linear<->smoothstep для падения
-    uniform float aoLightBlend; // 0..1: 0 = AO полностью, 1 = AO игнорируется
+    uniform float lightSharpness; // controls "center" sharpness
+    uniform float lightTransitionSoftness; // 0..1: blend linear<->smoothstep for falloff
+    uniform float aoLightBlend; // 0..1: 0 = full AO, 1 = ignore AO
     uniform int debugWhitebox; // 1 = force white, 0 = use texture
     // Torch / player-carried light
     uniform vec3 torchColor; // RGB tint for the player light (yellow-orange)
     uniform float torchFlicker; // flicker multiplier applied to torchColor
     
     void main() {
-        // Выбираем базовый цвет: либо белый при debug, либо из текстуры
+        // Choose base color: either white in debug, or from texture
         vec4 texColor = texture(texSampler, TexCoords);
         vec4 baseColor = (debugWhitebox == 1) ? vec4(1.0, 1.0, 1.0, 1.0) : texColor;
         
@@ -103,12 +103,12 @@ const char* ssaoFragmentShaderSource = R"glsl(
     uniform float ambientLight;
     uniform float aoLightBlend; // 0..1 (0=full AO,1=ignore AO)
 
-    // dithering uniforms
+    // Dithering uniforms
     uniform int useDither;       // 0/1
     uniform int ditherPalette;   // 256 / 4096 / 32768
     uniform vec2 screenSize;     // in pixels (low-res)
 
-    // linearize depth from depth texture
+    // Linearize depth from depth texture
     float linearizeDepth(float z) {
         float ndc = z * 2.0 - 1.0;
         return (2.0 * projNear * projFar) / (projFar + projNear - ndc * (projFar - projNear));
@@ -117,7 +117,7 @@ const char* ssaoFragmentShaderSource = R"glsl(
     // 4x4 Bayer matrix values normalized [0,1)
     float bayer4(int x, int y) {
         int idx = y*4 + x;
-        // typical 4x4 Bayer order
+        // Typical 4x4 Bayer order
         int tbl[16] = int[16](0,8,2,10, 12,4,14,6, 3,11,1,9, 15,7,13,5);
         return (float(tbl[idx]) + 0.5) / 16.0;
     }
@@ -128,7 +128,7 @@ const char* ssaoFragmentShaderSource = R"glsl(
         float z = texture(depthTex, uv).r;
         float linearZ = linearizeDepth(z);
 
-        // simple AO: sample neighbors in a small radius (in pixels)
+        // Simple AO: sample neighbors in a small radius (in pixels)
         int samples = 8;
         float radius = 3.0; // pixels in low-res buffer
         vec2 px = 1.0 / screenSize;
@@ -147,17 +147,17 @@ const char* ssaoFragmentShaderSource = R"glsl(
         occ = occ / float(samples); // 0..1
         float ssao = 1.0 - occ; // 1 = no occlusion, 0 = full occlusion
 
-        // blend SSAO with AO_LIGHT_BLEND
+        // Blend SSAO with AO_LIGHT_BLEND
         float aoBlend = clamp(aoLightBlend, 0.0, 1.0);
         float aoEffect = mix(ssao, 1.0, aoBlend);
 
-        // combine with ambient
+        // Combine with ambient
         float finalFactor = max(ambientLight, aoEffect);
         vec3 colorOut = baseColor.rgb * finalFactor;
 
         // Shader-only ordered dithering (Bayer 4x4) with palette quantization
         if (useDither == 1) {
-            // compute integer pixel coords in low-res buffer
+            // Compute integer pixel coords in low-res buffer
             ivec2 pix = ivec2(floor(uv * screenSize));
             int bx = pix.x & 3; // %4
             int by = pix.y & 3;

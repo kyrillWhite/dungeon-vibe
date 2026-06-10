@@ -18,8 +18,8 @@ struct Map {
     int grid[MAP_SIZE][MAP_SIZE];
     int visible[MAP_SIZE][MAP_SIZE];
     
-    std::vector<float> wallVertices;       // Строго 6 float: X, Y, Z, U, V, AO
-    std::vector<float> floorCeilVertices;  // Строго 6 float: X, Y, Z, U, V, AO
+    std::vector<float> wallVertices;       // Exactly 6 floats: X, Y, Z, U, V, AO
+    std::vector<float> floorCeilVertices;  // Exactly 6 floats: X, Y, Z, U, V, AO
     glm::vec3 spawnPos;
 
     int isWall(int x, int z) {
@@ -37,10 +37,10 @@ struct Map {
         float y0 = 0.0f, y1 = h;
         float z0 = fz, z1 = fz + size;
 
-        // ОТМЕНА AO: Записываем жесткую единицу, убирая любые тени на стенах
+        // Remove AO: Write hard unit, removing any shadows on walls
         float noAO = 1.00f; 
 
-        if (z + 1 < MAP_SIZE && grid[x][z + 1] == 0) { // Юг
+        if (z + 1 < MAP_SIZE && grid[x][z + 1] == 0) { // South
             float face[] = {
                 x0, y0, z1,  0.0f, 0.0f, noAO,   x1, y0, z1,  1.0f, 0.0f, noAO,   x1, y1, z1,  1.0f, 1.0f, noAO,
                 x1, y1, z1,  1.0f, 1.0f, noAO,   x0, y1, z1,  0.0f, 1.0f, noAO,   x0, y0, z1,  0.0f, 0.0f, noAO
@@ -48,7 +48,7 @@ struct Map {
             wallVertices.insert(wallVertices.end(), std::begin(face), std::end(face));
         }
 
-        if (z - 1 >= 0 && grid[x][z - 1] == 0) { // Север
+        if (z - 1 >= 0 && grid[x][z - 1] == 0) { // North
             float face[] = {
                 x1, y0, z0,  0.0f, 0.0f, noAO,   x0, y0, z0,  1.0f, 0.0f, noAO,   x0, y1, z0,  1.0f, 1.0f, noAO,
                 x0, y1, z0,  1.0f, 1.0f, noAO,   x1, y1, z0,  0.0f, 1.0f, noAO,   x1, y0, z0,  0.0f, 0.0f, noAO
@@ -56,7 +56,7 @@ struct Map {
             wallVertices.insert(wallVertices.end(), std::begin(face), std::end(face));
         }
 
-        if (x - 1 >= 0 && grid[x - 1][z] == 0) { // Запад
+        if (x - 1 >= 0 && grid[x - 1][z] == 0) { // West
             float face[] = {
                 x0, y0, z0,  0.0f, 0.0f, noAO,   x0, y0, z1,  1.0f, 0.0f, noAO,   x0, y1, z1,  1.0f, 1.0f, noAO,
                 x0, y1, z1,  1.0f, 1.0f, noAO,   x0, y1, z0,  0.0f, 1.0f, noAO,   x0, y0, z0,  0.0f, 0.0f, noAO
@@ -64,7 +64,7 @@ struct Map {
             wallVertices.insert(wallVertices.end(), std::begin(face), std::end(face));
         }
 
-        if (x + 1 < MAP_SIZE && grid[x + 1][z] == 0) { // Восток
+        if (x + 1 < MAP_SIZE && grid[x + 1][z] == 0) { // East
             float face[] = {
                 x1, y0, z1,  0.0f, 0.0f, noAO,   x1, y0, z0,  1.0f, 0.0f, noAO,   x1, y1, z0,  1.0f, 1.0f, noAO,
                 x1, y1, z0,  1.0f, 1.0f, noAO,   x1, y1, z1,  0.0f, 1.0f, noAO,   x1, y0, z1,  0.0f, 0.0f, noAO
@@ -133,7 +133,7 @@ struct Map {
                     float fx = static_cast<float>(x);
                     float fz = static_cast<float>(z);
                     
-                    // ОТМЕНА AO: Все углы пола и потолка идеально белые
+                    // Remove AO: All floor and ceiling corners are perfectly white
                     float ao_0_0 = 1.0f;
                     float ao_1_0 = 1.0f;
                     float ao_1_1 = 1.0f;
