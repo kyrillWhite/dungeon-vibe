@@ -23,8 +23,7 @@ jobs:
           mkdir -p release
           rm -f release/* || true
           if [ -f game ]; then cp game release/; fi
-          cp wall.png release/ || true
-          cp floor.png release/ || true
+          cp -r textures/* release/ || true
           NAME=${{ github.event.repository.name }}-${{ github.ref_name }}-linux.tar.gz
           tar -czf "$NAME" -C release .
           mv "$NAME" release/
@@ -63,8 +62,7 @@ jobs:
           rm -f release/* || true
           EXE=$(find . -maxdepth 2 -type f -iname "game.exe" | head -n1 || true)
           if [ -n "$EXE" ]; then cp "$EXE" release/; fi
-          cp wall.png release/ || true
-          cp floor.png release/ || true
+          cp -r textures/. release/ || true
           cp /mingw64/bin/libgcc_s_seh-1.dll release/ || true
           cp /mingw64/bin/libstdc++-6.dll release/ || true
           cp /mingw64/bin/libwinpthread-1.dll release/|| true

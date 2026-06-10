@@ -50,12 +50,12 @@ make run
 
 ## Controls
 
-| Key | Action |
-|-----|--------|
-| **W/A/S/D** | Move forward/left/backward/right |
-| **Mouse** | Look around |
-| **TAB** | Toggle minimap transparency (full-screen mode) |
-| **ESC** | Exit game |
+| Key         | Action                                         |
+| ----------- | ---------------------------------------------- |
+| **W/A/S/D** | Move forward/left/backward/right               |
+| **Mouse**   | Look around                                    |
+| **TAB**     | Toggle minimap transparency (full-screen mode) |
+| **ESC**     | Exit game                                      |
 
 ## Project Structure
 
@@ -70,8 +70,6 @@ make run
 ├── Textures.h            # Texture loading and management
 ├── Settings.h            # Configuration and visual parameters
 ├── Input.h               # Input callbacks (keyboard, mouse)
-├── floor.png             # Floor/ceiling texture
-├── wall.png              # Wall texture
 └── settings.cfg          # Configuration file
 ```
 

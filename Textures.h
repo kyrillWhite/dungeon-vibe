@@ -67,8 +67,8 @@ struct TextureManager {
 
     void init() {
         // Переходим на PNG-файлы
-        wallTexture  = loadPNG("wall.png");
-        floorTexture = loadPNG("floor.png");
+        wallTexture = loadPNG("textures/wall.png");
+        floorTexture = loadPNG("textures/floor.png");
 
         if (wallTexture == 0 || floorTexture == 0) {
             std::cerr << "[WARNING] Проверьте наличие wall.png и floor.png в папке запуска!" << std::endl;
