@@ -1,5 +1,4 @@
-#ifndef MINIMAP_H
-#define MINIMAP_H
+#pragma once
 
 #include <GL/glew.h>
 #include <vector>
@@ -194,5 +193,3 @@ struct Minimap {
         }
     }
 };
-
-#endif

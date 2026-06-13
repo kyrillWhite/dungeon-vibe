@@ -1,5 +1,4 @@
-#ifndef SHADERS_H
-#define SHADERS_H
+#pragma once
 
 const char* vertexShaderSource = R"glsl(
     #version 330 core
@@ -221,5 +220,3 @@ const char* screenFragmentShaderSource = R"glsl(
         }
     }
 )glsl";
-
-#endif

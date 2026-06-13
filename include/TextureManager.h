@@ -1,5 +1,4 @@
-#ifndef TEXTURES_H
-#define TEXTURES_H
+#pragma once
 
 #include <GL/glew.h>
 #include <iostream>
@@ -55,9 +54,13 @@ struct TextureManager {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
             stbi_image_free(data);
+            #ifdef DEBUG_LOG
             std::cout << "[SUCCESS] Texture loaded: " << filename << " (" << width << "x" << height << ", channels: " << nrChannels << ")" << std::endl;
+            #endif
         } else {
+            #ifdef DEBUG_LOG
             std::cerr << "[ERROR] stbi_image failed to load file: " << filename << std::endl;
+            #endif
             stbi_image_free(data);
             return 0;
         }
@@ -82,5 +85,3 @@ struct TextureManager {
         }
     }
 };
-
-#endif

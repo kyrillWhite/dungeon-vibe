@@ -1,5 +1,4 @@
-#ifndef MAP_H
-#define MAP_H
+#pragma once
 
 #include <vector>
 #include <cstdlib>
@@ -163,5 +162,3 @@ struct Map {
         }
     }
 };
-
-#endif

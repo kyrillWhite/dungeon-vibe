@@ -1,5 +1,4 @@
-#ifndef CAMERA_H
-#define CAMERA_H
+#pragma once
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -102,5 +101,3 @@ struct Camera {
         front = glm::normalize(f);
     }
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#pragma once
 
 #include <string>
 #include <sstream>
@@ -207,5 +206,3 @@ inline std::string execConsoleCommand(const std::string &cmd) {
 }
 
 } // namespace Settings
-
-#endif
