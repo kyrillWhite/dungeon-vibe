@@ -57,22 +57,6 @@ make run
 | **TAB**     | Toggle minimap transparency (full-screen mode) |
 | **ESC**     | Exit game                                      |
 
-## Project Structure
-
-```
-├── main.cpp              # Main game loop and renderer initialization
-├── Camera.h              # First-person camera system with input handling
-├── Map.h                 # Dungeon generation and geometry
-├── Minimap.h             # Real-time minimap rendering
-├── Display.h             # Display and window management
-├── Shaders.h             # Shader source code definitions
-├── ShaderUtils.h         # Shader compilation and linking utilities
-├── Textures.h            # Texture loading and management
-├── Settings.h            # Configuration and visual parameters
-├── Input.h               # Input callbacks (keyboard, mouse)
-└── settings.cfg          # Configuration file
-```
-
 ## Documentation
 
 For detailed information about game mechanics and visual systems, see the [docs](docs/) directory:
@@ -95,21 +79,6 @@ Despite the retro style, the rendering leverages modern OpenGL techniques:
 - Dynamic lighting with smooth falloff
 - Efficient geometry management
 
-## Configuration
-
-Edit `settings.cfg` to customize:
-- **FOV_DEGREES**: Field of view angle
-- **AMBIENT_LIGHT**: Base ambient light level
-- **LIGHT_RADIUS_NEAR/FAR**: Torch lighting distance and falloff
-- **USE_DITHER**: Enable/disable dithering effects
-- **DITHER_PALETTE**: Choose dither pattern
-- **SCREEN_DISTORTION**: CRT-like distortion effect
-- **ANISOTROPY_LEVEL**: Texture filtering quality
-
 ## License
 
-This project is part of the Dungeon Vibe series.
-
-## Contributing
-
-Contributions are welcome! Please ensure code follows the existing style and include documentation for new features.
+This project is licensed under the **[MIT License](LICENSE)**.
