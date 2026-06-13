@@ -82,6 +82,8 @@ jobs:
   create-release:
     needs: [build-ubuntu, build-windows]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Download ubuntu artifact
@@ -96,11 +98,10 @@ jobs:
           path: artifacts/windows-build 
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
+          generate_release_notes: true
           body: "Automated release for ${{ github.ref_name }}"
           draft: false
           prerelease: false
