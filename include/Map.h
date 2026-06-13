@@ -189,4 +189,34 @@ struct Map
             }
         }
     }
+
+    void updateVisibility(const glm::vec3 &cameraPos, int viewDist, int numRays)
+    {
+        int pX = static_cast<int>(cameraPos.x);
+        int pZ = static_cast<int>(cameraPos.z);
+
+        if (pX >= 0 && pX < MAP_SIZE && pZ >= 0 && pZ < MAP_SIZE)
+        {
+            visible[pX][pZ] = 1;
+        }
+
+        for (int i = 0; i < numRays; ++i)
+        {
+            float angle = (static_cast<float>(i) / numRays) * 2.0f * 3.14159265f;
+            float dirX = std::cos(angle);
+            float dirZ = std::sin(angle);
+
+            for (float dist = 0.5f; dist <= static_cast<float>(viewDist); dist += 0.3f)
+            {
+                int curX = static_cast<int>(cameraPos.x + dirX * dist);
+                int curZ = static_cast<int>(cameraPos.z + dirZ * dist);
+
+                if (curX < 0 || curX >= MAP_SIZE || curZ < 0 || curZ >= MAP_SIZE)
+                    break;
+                visible[curX][curZ] = 1;
+                if (grid[curX][curZ] == 1)
+                    break;
+            }
+        }
+    }
 };
