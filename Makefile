@@ -16,7 +16,7 @@ else
 endif
 
 CXX := g++
-CXX_FLAGS_BASE := -std=c++17 -DGLEW_STATIC -Iinclude -Ilibs
+CXX_FLAGS_BASE := -std=c++20 -DGLEW_STATIC -Iinclude -Ilibs
 
 IMGUI_DIR := libs/imgui
 IMGUI_INC := -I$(IMGUI_DIR)
