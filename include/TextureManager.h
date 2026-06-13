@@ -75,7 +75,9 @@ struct TextureManager {
 
         for (const auto& [name, id] : textures) {
             if (id == 0) {
+                #ifdef GAME_DEBUG
                 std::cerr << "[WARNING] Can't load " << name << " texture!" << std::endl;
+                #endif
             }
         }
     }
