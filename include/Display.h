@@ -4,11 +4,9 @@
 #include <GLFW/glfw3.h>
 #include <algorithm>
 
-inline const int GAME_WIDTH = 240;
-inline const int GAME_HEIGHT = 144;
-inline const int MAP_SIZE = 48;
-
-inline const bool DEBUG_WHITEBOX_MODE = false; // Temporary, main.cpp now takes real value from Settings
+constexpr int GAME_WIDTH = 240;
+constexpr int GAME_HEIGHT = 144;
+constexpr int MAP_SIZE = 48;
 
 struct Display {
     int winW;

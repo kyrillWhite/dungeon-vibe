@@ -11,7 +11,7 @@
 
 namespace Settings {
 
-inline const char * SETTINGS_FILE = "settings.cfg";
+constexpr char * SETTINGS_FILE = "settings.cfg";
 
 // Default values
 inline float LIGHT_RADIUS_NEAR        = 1.0f;
@@ -31,19 +31,19 @@ inline float DITHER_AMOUNT            = 0.06f;  // legacy, kept but not used for
 struct Meta { float minv, maxv; const char* desc; };
 
 // Limits
-inline const Meta M_LIGHT_RADIUS_NEAR         = {0.0f, 50.0f, "near radius"};
-inline const Meta M_LIGHT_RADIUS_FAR          = {0.01f, 100.0f, "far radius"};
-inline const Meta M_AMBIENT_LIGHT             = {0.0f, 1.0f, "ambient"};
-inline const Meta M_LIGHT_TRANSITION_SOFTNESS = {0.0f, 1.0f, "transition softness"};
-inline const Meta M_LIGHT_SHARPNESS           = {0.0001f, 50.0f, "sharpness"};
-inline const Meta M_AO_LIGHT_BLEND            = {0.0f, 1.0f, "AO blend"};
-inline const Meta M_FOV_DEGREES               = {10.0f, 140.0f, "FOV degrees"};
-inline const Meta M_SCREEN_DISTORTION         = {0.0f, 0.5f, "screen distortion"};
-inline const Meta M_DEBUG_WHITEBOX_MODE       = {0.0f, 1.0f, "debug whitebox (0/1)"};
-inline const Meta M_ANISOTROPY_LEVEL         = {1.0f, 16.0f, "anisotropy level"};
-inline const Meta M_USE_DITHER               = {0.0f, 1.0f, "use dither (0/1)"};
-inline const Meta M_DITHER_AMOUNT            = {0.0f, 0.5f, "dither amount"};
-inline const Meta M_DITHER_PALETTE           = {0.0f, 32768.0f, "dither palette (256/4096/32768)"};
+constexpr Meta M_LIGHT_RADIUS_NEAR         = {0.0f, 50.0f, "near radius"};
+constexpr Meta M_LIGHT_RADIUS_FAR          = {0.01f, 100.0f, "far radius"};
+constexpr Meta M_AMBIENT_LIGHT             = {0.0f, 1.0f, "ambient"};
+constexpr Meta M_LIGHT_TRANSITION_SOFTNESS = {0.0f, 1.0f, "transition softness"};
+constexpr Meta M_LIGHT_SHARPNESS           = {0.0001f, 50.0f, "sharpness"};
+constexpr Meta M_AO_LIGHT_BLEND            = {0.0f, 1.0f, "AO blend"};
+constexpr Meta M_FOV_DEGREES               = {10.0f, 140.0f, "FOV degrees"};
+constexpr Meta M_SCREEN_DISTORTION         = {0.0f, 0.5f, "screen distortion"};
+constexpr Meta M_DEBUG_WHITEBOX_MODE       = {0.0f, 1.0f, "debug whitebox (0/1)"};
+constexpr Meta M_ANISOTROPY_LEVEL         = {1.0f, 16.0f, "anisotropy level"};
+constexpr Meta M_USE_DITHER               = {0.0f, 1.0f, "use dither (0/1)"};
+constexpr Meta M_DITHER_AMOUNT            = {0.0f, 0.5f, "dither amount"};
+constexpr Meta M_DITHER_PALETTE           = {0.0f, 32768.0f, "dither palette (256/4096/32768)"};
 
 inline void clampInPlace(float &v, const Meta &m) { if (v < m.minv) v = m.minv; if (v > m.maxv) v = m.maxv; }
 
