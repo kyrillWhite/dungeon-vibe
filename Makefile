@@ -13,10 +13,16 @@ endif
 
 CXXFLAGS := -Iinclude -Ilibs
 
-all: build
+all: release
+
+build:
+	g++ -std=c++17 $(CXXFLAGS) -Ilibs/imgui -DGAME_DEBUG src/*.cpp libs/imgui/*.cpp libs/imgui/backends/*.cpp -o $(OUT) $(LIBS)
 
 run: build
 	./$(OUT)
 
-build:
+release:
 	g++ -std=c++17 $(CXXFLAGS) src/*.cpp -o $(OUT) $(LIBS)
+
+release-run: release
+	./$(OUT)

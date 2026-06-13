@@ -1,5 +1,3 @@
-#define DEBUG_LOG
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -8,6 +6,11 @@
 #include <iostream>
 #include <random>
 #include <ctime>
+#ifdef GAME_DEBUG
+#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
+#include "DevPanel.h"
+#endif
 
 #include "Shaders.h"
 #include "Camera.h"
@@ -43,10 +46,18 @@ int main() {
     glfwSetKeyCallback(window, key_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCharCallback(window, char_callback);
 
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) return -1;
+
+    #ifdef GAME_DEBUG
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 130");
+    #endif
 
     dungeon.generate();
     camera.pos = dungeon.spawnPos;
@@ -326,6 +337,21 @@ int main() {
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // minimap already rendered into low-res buffer earlier; no overlay here
+
+        #ifdef GAME_DEBUG
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // Render developer debug window if toggled active
+        if (debugActive) {
+            DevPanel::get().draw(&debugActive);
+        }
+
+        // End ImGui Frame & Render
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        #endif
 
         glfwSwapBuffers(window);
         glfwPollEvents();
