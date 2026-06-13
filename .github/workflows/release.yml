@@ -90,13 +90,21 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-build
-          path: artifacts/windows-build 
+          path: artifacts/windows-build
+      - name: Build Changelog
+        id: github_release_changelog
+        uses: mikepenz/release-changelog-builder-action@v6
+        with:
+          mode: "COMMIT"
+          configuration: ".github/release_notes_config.json"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
-          generate_release_notes: true
+          body: ${{ steps.github_release_changelog.outputs.changelog }}
           draft: false
           prerelease: false
           files: |

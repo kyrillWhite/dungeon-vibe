@@ -1,0 +1,42 @@
+{
+  "categories": [
+    {
+      "title": "## 🚀 Features",
+      "labels": [
+        "feat"
+      ]
+    },
+    {
+      "title": "## 🐛 Bug Fixes",
+      "labels": [
+        "fix"
+      ]
+    },
+    {
+      "title": "## 🧹 Refactoring & Maintenance",
+      "labels": [
+        "refactor",
+        "perf",
+        "chore"
+      ]
+    },
+    {
+      "title": "## 📝 Documentation",
+      "labels": [
+        "docs"
+      ]
+    },
+    {
+      "title": "## Other",
+      "labels": []
+    }
+  ],
+  "label_extractor": [
+    {
+      "pattern": "^(feat|fix|refactor|perf|chore|docs)(?:\\([\\w\\-\\.]+\\))?!?: .*",
+      "on_property": "title",
+      "target": "$1"
+    }
+  ],
+  "template": "#{{CHANGELOG}}"
+}
