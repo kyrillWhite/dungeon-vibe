@@ -12,11 +12,13 @@ else
 endif
 
 CXXFLAGS := -Iinclude -Ilibs
+IMGUI_LIB := libs/imgui
+IMGUI_SRC := $(IMGUI_LIB)/*.cpp $(IMGUI_LIB)/backends/imgui_impl_opengl3.cpp $(IMGUI_LIB)/backends/imgui_impl_glfw.cpp
 
 all: release
 
 build:
-	g++ -std=c++17 $(CXXFLAGS) -Ilibs/imgui -DGAME_DEBUG src/*.cpp libs/imgui/*.cpp libs/imgui/backends/*.cpp -o $(OUT) $(LIBS)
+	g++ -std=c++17 $(CXXFLAGS) -I$(IMGUI_LIB) -DGAME_DEBUG src/*.cpp $(IMGUI_SRC) -o $(OUT) $(LIBS)
 
 run: build
 	./$(OUT)
