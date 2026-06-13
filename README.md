@@ -1,5 +1,10 @@
 # Dungeon Vibe
 
+[![Build Status](https://img.shields.io/github/actions/workflow/status/kyrillWhite/dungeon-vibe/release.yml)](https://github.com/kyrillWhite/dungeon-vibe/actions)
+[![License](https://img.shields.io/github/v/release/kyrillWhite/dungeon-vibe)](https://github.com/kyrillWhite/dungeon-vibe/releases)
+[![Last Commit](https://img.shields.io/github/last-commit/kyrillWhite/dungeon-vibe)](https://github.com/kyrillWhite/dungeon-vibe/commits)
+[![Release](https://img.shields.io/github/license/kyrillWhite/dungeon-vibe)](https://github.com/kyrillWhite/dungeon-vibe/blob/master/LICENSE)
+
 A retro-styled 3D dungeon exploration game built with modern OpenGL graphics and atmospheric rendering.
 
 ## Overview
@@ -38,9 +43,9 @@ A retro-styled 3D dungeon exploration game built with modern OpenGL graphics and
   - GLFW3 (Window and input management)
   - GLM (OpenGL Mathematics)
 
-### Linux / MinGW
+### Build Linux / MinGW
 ```bash
-make build
+make debug
 ```
 
 ### Running
