@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+
 #include "Map.h"
 #include "Camera.h"
 #include "Display.h"
@@ -42,7 +43,14 @@ struct Minimap
         return 1.0f - (pixelY * 2.0f / targetH);
     }
 
-    void render(unsigned int shader2D, const Map &map, const Camera &camera, bool fullScreenMode, float currentAlpha, int targetW, int targetH)
+    void render(
+        unsigned int shader2D,
+        std::shared_ptr<Map> map,
+        std::shared_ptr<Camera> camera,
+        bool fullScreenMode,
+        float currentAlpha,
+        int targetW,
+        int targetH)
     {
         const bool DEBUG_FORCE_BRIGHT = false;
         if (!initialized)
@@ -130,15 +138,15 @@ struct Minimap
         }
 
         // Player current coordinates
-        float pX = camera.pos.x;
-        float pZ = camera.pos.z;
+        float pX = camera->pos.x;
+        float pZ = camera->pos.z;
 
         // 1. Wall geometry (Uses new increased TILE_SIZE)
         for (int x = 0; x < MAP_SIZE; x++)
         {
             for (int z = 0; z < MAP_SIZE; z++)
             {
-                if (map.grid[x][z] == 1 && map.visible[x][z] == 1)
+                if (map->grid[x][z] == 1 && map->visible[x][z] == 1)
                 {
                     float offsetX = static_cast<float>(x) - pX;
                     float offsetZ = static_cast<float>(z) - pZ;
@@ -163,7 +171,7 @@ struct Minimap
         }
 
         // 2. Player geometry
-        float angle = std::atan2(-camera.front.z, camera.front.x);
+        float angle = std::atan2(-camera->front.z, camera->front.x);
 
         float pXTop = centerPixX + std::cos(angle) * pSize;
         float pYTop = centerPixY - std::sin(angle) * pSize;

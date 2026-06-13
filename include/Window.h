@@ -2,13 +2,8 @@
 
 #include <GLFW/glfw3.h>
 
-#include "Input.h"
-
-struct Window
+class Window
 {
-private:
-    GLFWwindow *window;
-
 public:
     int init(int width, int height)
     {
@@ -28,14 +23,14 @@ public:
             return -1;
         }
 
-        glfwSetWindowUserPointer(window, this);
-        glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-        glfwSetCursorPosCallback(window, mouse_callback);
-        glfwSetKeyCallback(window, key_callback);
-        glfwSetMouseButtonCallback(window, mouse_button_callback);
         glfwMakeContextCurrent(window);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+        return 0;
+    }
+
+    void initImGui()
+    {
 #ifdef GAME_DEBUG
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -45,8 +40,6 @@ public:
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 130");
 #endif
-
-        return 0;
     }
 
     bool isShouldClose()
@@ -59,8 +52,11 @@ public:
         glfwSwapBuffers(window);
     }
 
-    bool isKeyPressed(int key)
+    GLFWwindow *getWindowPtr()
     {
-        return glfwGetKey(window, key) == GLFW_PRESS;
+        return window;
     }
+
+private:
+    GLFWwindow *window;
 };

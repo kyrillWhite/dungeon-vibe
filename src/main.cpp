@@ -13,8 +13,10 @@
 #include <iostream>
 #include <random>
 #include <ctime>
+#include <memory>
 
 #include "Window.h"
+#include "Input.h"
 #include "Shaders.h"
 #include "Camera.h"
 #include "Display.h"
@@ -24,17 +26,19 @@
 #include "Settings.h"
 #include "ShaderUtils.h"
 
-Display display;
-Camera camera;
-Map dungeon;
-Minimap minimap;
-TextureManager textures;
+bool debugActive = false;
 
 int main()
 {
-    Window window;
+    auto window = std::make_shared<Window>();
+    auto input = std::make_shared<Input>();
+    auto camera = std::make_shared<Camera>();
+    auto display = std::make_shared<Display>();
+    auto dungeon = std::make_shared<Map>();
+    auto minimap = std::make_shared<Minimap>();
+    auto textures = std::make_shared<TextureManager>();
 
-    if (window.init(display.winW, display.winH))
+    if (window->init(display->winW, display->winH))
     {
         return -1;
     }
@@ -45,9 +49,59 @@ int main()
         return -1;
     }
 
-    dungeon.generate();
-    camera.pos = dungeon.spawnPos;
-    display.calculateScale(display.winW, display.winH);
+    input->init(window->getWindowPtr());
+    window->initImGui();
+    input->subscribeToMouseMove(std::bind_front(&Camera::processMouse, camera));
+    input->subscribeToFramebufferSize(std::bind_front(&Display::calculateScale, display));
+    input->subscribeToKey([camera, window](int key, int scancode, int action, int mods)
+                          {
+                              if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+                              {
+                                  camera->isCursorLocked = !camera->isCursorLocked;
+                                  if (camera->isCursorLocked)
+                                  {
+                                      glfwSetInputMode(window->getWindowPtr(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                                      camera->firstMouse = true;
+                                  }
+                                  else
+                                  {
+                                      glfwSetInputMode(window->getWindowPtr(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                                  }
+                              }
+
+#ifdef GAME_DEBUG
+                              // Toggle debig visibility with grave/backtick accent key
+                              if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS)
+                              {
+                                  debugActive = !debugActive;
+                                  if (debugActive)
+                                  {
+                                      glfwSetInputMode(window->getWindowPtr(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                                      camera->isCursorLocked = false;
+                                  }
+                                  else
+                                  {
+                                      glfwSetInputMode(window->getWindowPtr(), GLFW_CURSOR, camera->isCursorLocked ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+                                  }
+                              }
+#endif
+                          });
+
+    input->subscribeToMouseButton([camera, window](int button, int action, int mods)
+                                  {
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
+        if (!camera->isCursorLocked && !debugActive)
+        {
+            camera->isCursorLocked = true;
+            glfwSetInputMode(window->getWindowPtr(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            camera->firstMouse = true;
+        }
+    } });
+
+    dungeon->generate();
+    camera->pos = dungeon->spawnPos;
+    display->calculateScale(display->winW, display->winH);
 
     unsigned int shader3D = compileShaderPipeline(vertexShaderSource, fragmentShaderSource);
     unsigned int shader2D = compileShaderPipeline(screenVertexShaderSource, screenFragmentShaderSource);
@@ -67,7 +121,7 @@ int main()
     glGenBuffers(1, &wallVBO);
     glBindVertexArray(wallVAO);
     glBindBuffer(GL_ARRAY_BUFFER, wallVBO);
-    glBufferData(GL_ARRAY_BUFFER, dungeon.wallVertices.size() * sizeof(float), dungeon.wallVertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, dungeon->wallVertices.size() * sizeof(float), dungeon->wallVertices.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
@@ -81,7 +135,7 @@ int main()
     glGenBuffers(1, &floorVBO);
     glBindVertexArray(floorVAO);
     glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
-    glBufferData(GL_ARRAY_BUFFER, dungeon.floorCeilVertices.size() * sizeof(float), dungeon.floorCeilVertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, dungeon->floorCeilVertices.size() * sizeof(float), dungeon->floorCeilVertices.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
@@ -103,7 +157,7 @@ int main()
     glEnableVertexAttribArray(1);
 
     // Initialize textures through manager
-    textures.init();
+    textures->init();
 
     // Load settings from file (if exists)
     Settings::loadFromFile();
@@ -119,9 +173,9 @@ int main()
                 aniso = maxAniso;
             if (aniso < 1.0f)
                 aniso = 1.0f;
-            glBindTexture(GL_TEXTURE_2D, textures.textures["wall"]);
+            glBindTexture(GL_TEXTURE_2D, textures->textures["wall"]);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
-            glBindTexture(GL_TEXTURE_2D, textures.textures["floor"]);
+            glBindTexture(GL_TEXTURE_2D, textures->textures["floor"]);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
             glBindTexture(GL_TEXTURE_2D, 0);
         }
@@ -175,30 +229,30 @@ int main()
 
     float deltaTime = 0.0f, lastFrame = 0.0f;
 
-    while (!window.isShouldClose())
+    while (!window->isShouldClose())
     {
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        camera.processInput(
-            window.isKeyPressed(GLFW_KEY_W),
-            window.isKeyPressed(GLFW_KEY_S),
-            window.isKeyPressed(GLFW_KEY_A),
-            window.isKeyPressed(GLFW_KEY_D),
+        camera->processInput(
+            input->isKeyPressed(GLFW_KEY_W),
+            input->isKeyPressed(GLFW_KEY_S),
+            input->isKeyPressed(GLFW_KEY_A),
+            input->isKeyPressed(GLFW_KEY_D),
             deltaTime,
-            dungeon.grid);
+            dungeon->grid);
 
         // --- FOG OF WAR CALCULATION FOR MINIMAP ---
         {
-            int pX = static_cast<int>(camera.pos.x);
-            int pZ = static_cast<int>(camera.pos.z);
+            int pX = static_cast<int>(camera->pos.x);
+            int pZ = static_cast<int>(camera->pos.z);
             const int VIEW_DIST = 6;
             const int NUM_RAYS = 120;
 
             if (pX >= 0 && pX < MAP_SIZE && pZ >= 0 && pZ < MAP_SIZE)
             {
-                dungeon.visible[pX][pZ] = 1;
+                dungeon->visible[pX][pZ] = 1;
             }
 
             for (int i = 0; i < NUM_RAYS; ++i)
@@ -209,19 +263,19 @@ int main()
 
                 for (float dist = 0.5f; dist <= static_cast<float>(VIEW_DIST); dist += 0.3f)
                 {
-                    int curX = static_cast<int>(camera.pos.x + dirX * dist);
-                    int curZ = static_cast<int>(camera.pos.z + dirZ * dist);
+                    int curX = static_cast<int>(camera->pos.x + dirX * dist);
+                    int curZ = static_cast<int>(camera->pos.z + dirZ * dist);
 
                     if (curX < 0 || curX >= MAP_SIZE || curZ < 0 || curZ >= MAP_SIZE)
                         break;
-                    dungeon.visible[curX][curZ] = 1;
-                    if (dungeon.grid[curX][curZ] == 1)
+                    dungeon->visible[curX][curZ] = 1;
+                    if (dungeon->grid[curX][curZ] == 1)
                         break;
                 }
             }
         }
 
-        bool isTabPressed = window.isKeyPressed(GLFW_KEY_TAB);
+        bool isTabPressed = input->isKeyPressed(GLFW_KEY_TAB);
 
         // --- STAGE 1: RENDER 3D TO LOW RESOLUTION ---
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -233,7 +287,7 @@ int main()
         // --- STAGE 3: SSAO / DITHER PASS ---
         glUseProgram(shader3D);
         glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
+        glm::mat4 view = glm::lookAt(camera->pos, camera->pos + camera->front, camera->up);
 
         // Use FOV from settings
         float aspect = (float)GAME_WIDTH / (float)GAME_HEIGHT;
@@ -245,7 +299,7 @@ int main()
         glUniformMatrix4fv(glGetUniformLocation(shader3D, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
         // Pass lighting parameters from Settings
-        glUniform3fv(glGetUniformLocation(shader3D, "cameraPos"), 1, glm::value_ptr(camera.pos));
+        glUniform3fv(glGetUniformLocation(shader3D, "cameraPos"), 1, glm::value_ptr(camera->pos));
         glUniform1f(glGetUniformLocation(shader3D, "lightNear"), Settings::LIGHT_RADIUS_NEAR);
         glUniform1f(glGetUniformLocation(shader3D, "lightFar"), Settings::LIGHT_RADIUS_FAR);
         glUniform1f(glGetUniformLocation(shader3D, "ambientLight"), Settings::AMBIENT_LIGHT);
@@ -290,17 +344,17 @@ int main()
 
         // Draw wall geometry
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures.textures["wall"]);
+        glBindTexture(GL_TEXTURE_2D, textures->textures["wall"]);
         glUniform1i(glGetUniformLocation(shader3D, "texSampler"), 0);
         glBindVertexArray(wallVAO);
-        glDrawArrays(GL_TRIANGLES, 0, dungeon.wallVertices.size() / 6);
+        glDrawArrays(GL_TRIANGLES, 0, dungeon->wallVertices.size() / 6);
 
         // Draw floor and ceiling
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures.textures["floor"]);
+        glBindTexture(GL_TEXTURE_2D, textures->textures["floor"]);
         glUniform1i(glGetUniformLocation(shader3D, "texSampler"), 0);
         glBindVertexArray(floorVAO);
-        glDrawArrays(GL_TRIANGLES, 0, dungeon.floorCeilVertices.size() / 6);
+        glDrawArrays(GL_TRIANGLES, 0, dungeon->floorCeilVertices.size() / 6);
 
         // --- STAGE 2.5: MINIMAP OVERLAY AT LOW RESOLUTION (AFTER 3D, BEFORE SSAO) ---
         // Render minimap into the low-res color buffer so it gets processed by SSAO/dither
@@ -311,7 +365,7 @@ int main()
         glUniform1i(glGetUniformLocation(shader2D, "useTexture"), 0);
         float currentAlpha = isTabPressed ? 0.5f : 0.75f;
         glUniform1f(glGetUniformLocation(shader2D, "mapAlpha"), currentAlpha);
-        minimap.render(shader2D, dungeon, camera, isTabPressed, currentAlpha, GAME_WIDTH, GAME_HEIGHT);
+        minimap->render(shader2D, dungeon, camera, isTabPressed, currentAlpha, GAME_WIDTH, GAME_HEIGHT);
         // Restore depth writes and depth test
         glDepthMask(GL_TRUE);
         glEnable(GL_DEPTH_TEST);
@@ -346,7 +400,7 @@ int main()
 
         // --- STAGE 3: UPSCALE TO SCREEN ---
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(display.renderX, display.renderY, display.renderW, display.renderH);
+        glViewport(display->renderX, display->renderY, display->renderW, display->renderH);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -355,7 +409,7 @@ int main()
         glUniform1i(glGetUniformLocation(shader2D, "useTexture"), 1);
         glUniform1i(glGetUniformLocation(shader2D, "screenTexture"), 0);
         glUniform1f(glGetUniformLocation(shader2D, "screenDistortion"), Settings::SCREEN_DISTORTION);
-        float screenAspect = (float)display.renderW / (float)display.renderH;
+        float screenAspect = (float)display->renderW / (float)display->renderH;
         glUniform1f(glGetUniformLocation(shader2D, "screenAspect"), screenAspect);
 
         glActiveTexture(GL_TEXTURE0);
@@ -381,7 +435,7 @@ int main()
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 #endif
 
-        window.swapBuffers();
+        window->swapBuffers();
         glfwPollEvents();
     }
 
@@ -389,8 +443,8 @@ int main()
     Settings::saveToFile();
 
     // Full memory cleanup before exit
-    minimap.cleanup();
-    textures.cleanup();
+    minimap->cleanup();
+    textures->cleanup();
     glDeleteVertexArrays(1, &wallVAO);
     glDeleteBuffers(1, &wallVBO);
     glDeleteVertexArrays(1, &floorVAO);

@@ -1,84 +1,71 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include <string>
-#include <iostream>
+#include <memory>
+#include <functional>
+#include <vector>
 
-#include "Display.h"
-#include "Camera.h"
-#include "Settings.h"
-#include "Map.h"
-
-extern Display display;
-extern Camera camera;
-extern Map dungeon;
-
-// Debug panel state (inline to allow header-only usage)
-inline bool debugActive = false;
-
-inline void framebuffer_size_callback(GLFWwindow *window, int width, int height)
+class Input : public std::enable_shared_from_this<Input>
 {
-	display.calculateScale(width, height);
-}
+public:
+	using KeyCallback = std::function<void(int key, int scancode, int action, int mods)>;
+	using MouseMoveCallback = std::function<void(double xpos, double ypos)>;
+	using MouseButtonCallback = std::function<void(int button, int action, int mods)>;
+	using FramebufferSizeCallback = std::function<void(int width, int height)>;
 
-inline void mouse_callback(GLFWwindow *window, double xpos, double ypos)
-{
-	camera.processMouse(xpos);
-}
-
-inline void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
-{
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	void init(GLFWwindow *window)
 	{
-		camera.isCursorLocked = !camera.isCursorLocked;
-		if (camera.isCursorLocked)
-		{
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			camera.firstMouse = true;
-		}
-		else
-		{
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		}
+		this->window = window;
+		selfRef = shared_from_this();
+		glfwSetWindowUserPointer(window, &selfRef);
+
+		glfwSetFramebufferSizeCallback(window, [](GLFWwindow *w, int width, int height)
+									   {
+			if (auto input = get(w)) {
+				for (const auto& cb : input->framebufferSizeSubscribers) cb(width, height);
+			} });
+
+		glfwSetCursorPosCallback(window, [](GLFWwindow *w, double x, double y)
+								 {
+			if (auto input = get(w)) {
+				for (const auto& cb : input->mouseMoveSubscribers) cb(x, y);
+			} });
+
+		glfwSetKeyCallback(window, [](GLFWwindow *w, int k, int s, int a, int m)
+						   {
+			if (auto input = get(w)) {
+				for (const auto& cb : input->keySubscribers) cb(k, s, a, m);
+			} });
+
+		glfwSetMouseButtonCallback(window, [](GLFWwindow *w, int b, int a, int m)
+								   {
+			if (auto input = get(w)) {
+				for (const auto& cb : input->mouseButtonSubscribers) cb(b, a, m);
+			} });
 	}
 
-#ifdef GAME_DEBUG
-	// Toggle debig visibility with grave/backtick accent key
-	if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS)
+	bool isKeyPressed(int key) const
 	{
-		debugActive = !debugActive;
-		if (debugActive)
-		{
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			camera.isCursorLocked = false;
-		}
-		else
-		{
-			glfwSetInputMode(window, GLFW_CURSOR, camera.isCursorLocked ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-		}
+		return window && glfwGetKey(window, key) == GLFW_PRESS;
 	}
-#endif
 
-	if (key == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-	{
-		if (!camera.isCursorLocked && !debugActive)
-		{
-			camera.isCursorLocked = true;
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			camera.firstMouse = true;
-		}
-	}
-}
+	void subscribeToKey(KeyCallback cb) { keySubscribers.push_back(cb); }
+	void subscribeToMouseMove(MouseMoveCallback cb) { mouseMoveSubscribers.push_back(cb); }
+	void subscribeToMouseButton(MouseButtonCallback cb) { mouseButtonSubscribers.push_back(cb); }
+	void subscribeToFramebufferSize(FramebufferSizeCallback cb) { framebufferSizeSubscribers.push_back(cb); }
 
-inline void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
-{
-	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+private:
+	GLFWwindow *window = nullptr;
+	std::shared_ptr<Input> selfRef;
+
+	std::vector<KeyCallback> keySubscribers;
+	std::vector<MouseMoveCallback> mouseMoveSubscribers;
+	std::vector<MouseButtonCallback> mouseButtonSubscribers;
+	std::vector<FramebufferSizeCallback> framebufferSizeSubscribers;
+
+	static std::shared_ptr<Input> get(GLFWwindow *window)
 	{
-		if (!camera.isCursorLocked && !debugActive)
-		{
-			camera.isCursorLocked = true;
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			camera.firstMouse = true;
-		}
+		auto *ptrRef = static_cast<std::shared_ptr<Input> *>(glfwGetWindowUserPointer(window));
+		return (ptrRef && *ptrRef) ? *ptrRef : nullptr;
 	}
-}
+};

@@ -7,8 +7,9 @@
 #include "Settings.h"
 #include "Display.h" // For access to global MAP_SIZE
 
-struct Camera
+class Camera
 {
+public:
     glm::vec3 pos;
     glm::vec3 front;
     glm::vec3 up;
@@ -102,7 +103,7 @@ struct Camera
         }
     }
 
-    void processMouse(double xposIn)
+    void processMouse(double xposIn, double ypos)
     {
         if (!isCursorLocked)
             return;
