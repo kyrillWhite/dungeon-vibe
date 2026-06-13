@@ -11,7 +11,7 @@ else
 	LIBS := -lGLEW -lglfw -lGL
 endif
 
-CXXFLAGS := -Iinclude -Ilibs
+CXXFLAGS := -DGLEW_STATIC -Iinclude -Ilibs
 IMGUI_LIB := libs/imgui
 IMGUI_SRC := $(IMGUI_LIB)/*.cpp $(IMGUI_LIB)/backends/imgui_impl_opengl3.cpp $(IMGUI_LIB)/backends/imgui_impl_glfw.cpp
 
