@@ -1,7 +1,7 @@
 #pragma once
 
 // Final screen fragment shader: reads (SSAOed) low-res texture and applies radial distortion while upscaling.
-const char* screenFragmentShaderSource = R"glsl(
+const char *screenFragmentShaderSource = R"glsl(
     #version 330 core
     out vec4 FragColor;
     in vec2 TexCoords;

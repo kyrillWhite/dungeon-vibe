@@ -8,27 +8,33 @@
 #include <algorithm>
 #include "Settings.h"
 
-namespace DevPanel {
+namespace DevPanel
+{
 
-class DevPanel {
-public:
-    void draw(bool* open) {
-        ImGui::SetNextWindowSize(ImVec2(450, 500), ImGuiCond_FirstUseEver);
-        
-        if (!ImGui::Begin("Developer Settings", open)) {
-            ImGui::End();
-            return;
-        }
+    class DevPanel
+    {
+    public:
+        void draw(bool *open)
+        {
+            ImGui::SetNextWindowSize(ImVec2(450, 500), ImGuiCond_FirstUseEver);
 
-        ImGui::TextDisabled("Modify engine parameters in real-time.");
-        ImGui::Separator();
+            if (!ImGui::Begin("Developer Settings", open))
+            {
+                ImGui::End();
+                return;
+            }
 
-        // Iterate over our settings registry and generate appropriate UI controls automatically
-        for (const auto& s : Settings::getRegistry()) {
-            std::string label(s.name);
-            
-            // Render UI based on the actual type wrapped inside the Variant pointer
-            std::visit([&s, &label](auto&& targetPtr) {
+            ImGui::TextDisabled("Modify engine parameters in real-time.");
+            ImGui::Separator();
+
+            // Iterate over our settings registry and generate appropriate UI controls automatically
+            for (const auto &s : Settings::getRegistry())
+            {
+                std::string label(s.name);
+
+                // Render UI based on the actual type wrapped inside the Variant pointer
+                std::visit([&s, &label](auto &&targetPtr)
+                           {
                 using T = std::decay_t<decltype(*targetPtr)>;
                 
                 // Get typed min/max bounds from metadata
@@ -73,23 +79,24 @@ public:
                             Settings::saveToFile();
                         }
                     }
+                } }, s.ptr);
+
+                // Display the helpful description string underneath the control item
+                if (ImGui::IsItemHovered() && !s.desc.empty())
+                {
+                    ImGui::SetTooltip("%s", s.desc.data());
                 }
-            }, s.ptr);
-
-            // Display the helpful description string underneath the control item
-            if (ImGui::IsItemHovered() && !s.desc.empty()) {
-                ImGui::SetTooltip("%s", s.desc.data());
             }
+
+            ImGui::End();
         }
+    };
 
-        ImGui::End();
+    inline DevPanel &get()
+    {
+        static DevPanel instance;
+        return instance;
     }
-};
-
-inline DevPanel& get() {
-    static DevPanel instance;
-    return instance;
-}
 
 } // namespace DevPanel
 

@@ -1,7 +1,7 @@
 #pragma once
 
 // SSAO post-process fragment shader: reads low-res color + depth, computes simple AO and does shader-only dithering (Bayer ordered).
-const char* ssaoFragmentShaderSource = R"glsl(
+const char *ssaoFragmentShaderSource = R"glsl(
     #version 330 core
     out vec4 FragColor;
     in vec2 TexCoords; // full-screen quad TexCoords in [0,1]

@@ -6,11 +6,6 @@
 #include <iostream>
 #include <random>
 #include <ctime>
-#ifdef GAME_DEBUG
-#include <imgui/backends/imgui_impl_glfw.h>
-#include <imgui/backends/imgui_impl_opengl3.h>
-#include "DevPanel.h"
-#endif
 
 #include "Shaders.h"
 #include "Camera.h"
@@ -22,6 +17,13 @@
 #include "Input.h"
 #include "ShaderUtils.h"
 
+#ifdef GAME_DEBUG
+#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
+
+#include "DevPanel.h"
+#endif
+
 Display display;
 Camera camera;
 Map dungeon;
@@ -30,15 +32,21 @@ TextureManager textures;
 
 // Callbacks and shader helpers moved to separate modules (Input.* and ShaderUtils.*)
 
-int main() {
-    if (!glfwInit()) return -1;
+int main()
+{
+    if (!glfwInit())
+        return -1;
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(display.winW, display.winH, "Dungeon Vibe", NULL, NULL);
-    if (!window) { glfwTerminate(); return -1; }
+    GLFWwindow *window = glfwCreateWindow(display.winW, display.winH, "Dungeon Vibe", NULL, NULL);
+    if (!window)
+    {
+        glfwTerminate();
+        return -1;
+    }
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -48,16 +56,18 @@ int main() {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK) return -1;
+    if (glewInit() != GLEW_OK)
+        return -1;
 
-    #ifdef GAME_DEBUG
+#ifdef GAME_DEBUG
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
-    #endif
+#endif
 
     dungeon.generate();
     camera.pos = dungeon.spawnPos;
@@ -68,40 +78,53 @@ int main() {
     unsigned int shaderSSAO = compileShaderPipeline(screenVertexShaderSource, ssaoFragmentShaderSource); // SSAO pass
 
     float quadVertices[] = {
-        -1.0f,  1.0f,  0.0f, 0.0f, 1.0f,  
-        -1.0f, -1.0f,  0.0f, 0.0f, 0.0f,   
-         1.0f, -1.0f,  0.0f, 1.0f, 0.0f,
-        -1.0f,  1.0f,  0.0f, 0.0f, 1.0f,   
-         1.0f, -1.0f,  0.0f, 1.0f, 0.0f,   
-         1.0f,  1.0f,  0.0f, 1.0f, 1.0f
-    };
+        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+        1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 0.0f, 1.0f, 1.0f};
 
     // Setup VAO/VBO for walls (Stride = 6)
     unsigned int wallVAO, wallVBO;
-    glGenVertexArrays(1, &wallVAO); glGenBuffers(1, &wallVBO);
-    glBindVertexArray(wallVAO); glBindBuffer(GL_ARRAY_BUFFER, wallVBO);
+    glGenVertexArrays(1, &wallVAO);
+    glGenBuffers(1, &wallVBO);
+    glBindVertexArray(wallVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, wallVBO);
     glBufferData(GL_ARRAY_BUFFER, dungeon.wallVertices.size() * sizeof(float), dungeon.wallVertices.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0); glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float))); glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(5 * sizeof(float))); glEnableVertexAttribArray(2); // AO attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(5 * sizeof(float)));
+    glEnableVertexAttribArray(2); // AO attribute
 
     // Setup VAO/VBO for floor and ceiling (Stride = 6)
     unsigned int floorVAO, floorVBO;
-    glGenVertexArrays(1, &floorVAO); glGenBuffers(1, &floorVBO);
-    glBindVertexArray(floorVAO); glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
+    glGenVertexArrays(1, &floorVAO);
+    glGenBuffers(1, &floorVBO);
+    glBindVertexArray(floorVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
     glBufferData(GL_ARRAY_BUFFER, dungeon.floorCeilVertices.size() * sizeof(float), dungeon.floorCeilVertices.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0); glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float))); glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(5 * sizeof(float))); glEnableVertexAttribArray(2); // AO attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(5 * sizeof(float)));
+    glEnableVertexAttribArray(2); // AO attribute
 
     // Setup screen quad buffer (for upscaling)
     unsigned int quadVAO, quadVBO;
-    glGenVertexArrays(1, &quadVAO); glGenBuffers(1, &quadVBO);
-    glBindVertexArray(quadVAO); glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+    glBindVertexArray(quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0); glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
     // location 1 is a vec3: we store (z, u, v) in the quad vertex layout -> offset = 2*sizeof(float)
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float))); glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // Initialize textures through manager
     textures.init();
@@ -112,11 +135,14 @@ int main() {
     // apply anisotropic filtering to loaded textures (if supported)
     {
         GLfloat maxAniso = 0.0f;
-        if (glewIsSupported("GL_EXT_texture_filter_anisotropic")) {
+        if (glewIsSupported("GL_EXT_texture_filter_anisotropic"))
+        {
             glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
             float aniso = Settings::ANISOTROPY_LEVEL;
-            if (aniso > maxAniso) aniso = maxAniso;
-            if (aniso < 1.0f) aniso = 1.0f;
+            if (aniso > maxAniso)
+                aniso = maxAniso;
+            if (aniso < 1.0f)
+                aniso = 1.0f;
             glBindTexture(GL_TEXTURE_2D, textures.textures["wall"]);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
             glBindTexture(GL_TEXTURE_2D, textures.textures["floor"]);
@@ -127,36 +153,43 @@ int main() {
 
     // Setup low-resolution framebuffer: color + depth as texture
     unsigned int framebuffer, textureColorBuffer, depthTexture;
-    glGenFramebuffers(1, &framebuffer); glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
     // color texture
-    glGenTextures(1, &textureColorBuffer); glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
+    glGenTextures(1, &textureColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, GAME_WIDTH, GAME_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorBuffer, 0);
 
     // depth texture (so SSAO can sample it)
-    glGenTextures(1, &depthTexture); glBindTexture(GL_TEXTURE_2D, depthTexture);
+    glGenTextures(1, &depthTexture);
+    glBindTexture(GL_TEXTURE_2D, depthTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, GAME_WIDTH, GAME_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
         std::cerr << "Low-res FBO not complete\n";
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // SSAO output FBO (writes AO-applied color)
     unsigned int ssaoFBO, aoTexture;
-    glGenFramebuffers(1, &ssaoFBO); glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
-    glGenTextures(1, &aoTexture); glBindTexture(GL_TEXTURE_2D, aoTexture);
+    glGenFramebuffers(1, &ssaoFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+    glGenTextures(1, &aoTexture);
+    glBindTexture(GL_TEXTURE_2D, aoTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, GAME_WIDTH, GAME_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, aoTexture, 0);
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
         std::cerr << "SSAO FBO not complete\n";
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -166,7 +199,8 @@ int main() {
 
     float deltaTime = 0.0f, lastFrame = 0.0f;
 
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window))
+    {
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -177,38 +211,43 @@ int main() {
         {
             int pX = static_cast<int>(camera.pos.x);
             int pZ = static_cast<int>(camera.pos.z);
-            const int VIEW_DIST = 6; 
-            const int NUM_RAYS = 120; 
+            const int VIEW_DIST = 6;
+            const int NUM_RAYS = 120;
 
-            if (pX >= 0 && pX < MAP_SIZE && pZ >= 0 && pZ < MAP_SIZE) {
+            if (pX >= 0 && pX < MAP_SIZE && pZ >= 0 && pZ < MAP_SIZE)
+            {
                 dungeon.visible[pX][pZ] = 1;
             }
 
-            for (int i = 0; i < NUM_RAYS; ++i) {
+            for (int i = 0; i < NUM_RAYS; ++i)
+            {
                 float angle = (static_cast<float>(i) / NUM_RAYS) * 2.0f * 3.1415926f;
-                float dirX = std::cos(angle); float dirZ = std::sin(angle);
+                float dirX = std::cos(angle);
+                float dirZ = std::sin(angle);
 
-                for (float dist = 0.5f; dist <= static_cast<float>(VIEW_DIST); dist += 0.3f) {
+                for (float dist = 0.5f; dist <= static_cast<float>(VIEW_DIST); dist += 0.3f)
+                {
                     int curX = static_cast<int>(camera.pos.x + dirX * dist);
                     int curZ = static_cast<int>(camera.pos.z + dirZ * dist);
 
-                    if (curX < 0 || curX >= MAP_SIZE || curZ < 0 || curZ >= MAP_SIZE) break;
+                    if (curX < 0 || curX >= MAP_SIZE || curZ < 0 || curZ >= MAP_SIZE)
+                        break;
                     dungeon.visible[curX][curZ] = 1;
-                    if (dungeon.grid[curX][curZ] == 1) break; 
+                    if (dungeon.grid[curX][curZ] == 1)
+                        break;
                 }
             }
         }
 
         bool isTabPressed = (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS);
-        
+
         // --- STAGE 1: RENDER 3D TO LOW RESOLUTION ---
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
         glViewport(0, 0, GAME_WIDTH, GAME_HEIGHT);
         glEnable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-    
+
         // --- STAGE 3: SSAO / DITHER PASS ---
         glUseProgram(shader3D);
         glm::mat4 model = glm::mat4(1.0f);
@@ -241,12 +280,13 @@ int main() {
         static float torchTimer = 0.0f;
         static float torchNextChange = 0.35f;
         static std::mt19937 torchRng(static_cast<unsigned>(std::time(nullptr)));
-        static std::uniform_real_distribution<float> changeDist(0.12f, 0.9f); // seconds between changes
-        static std::uniform_real_distribution<float> flickerDist(0.78f, 1.18f);  // target range
+        static std::uniform_real_distribution<float> changeDist(0.12f, 0.9f);   // seconds between changes
+        static std::uniform_real_distribution<float> flickerDist(0.78f, 1.18f); // target range
 
         // advance timer using frame deltaTime so flicker rate is independent of fps
         torchTimer += deltaTime;
-        if (torchTimer >= torchNextChange) {
+        if (torchTimer >= torchNextChange)
+        {
             torchTimer = 0.0f;
             torchNextChange = changeDist(torchRng);
             torchTarget = flickerDist(torchRng);
@@ -258,8 +298,10 @@ int main() {
         torchFlicker += (torchTarget - torchFlicker) * alpha;
 
         // keep within safe bounds
-        if (torchFlicker < 0.6f) torchFlicker = 0.6f;
-        if (torchFlicker > 1.25f) torchFlicker = 1.25f;
+        if (torchFlicker < 0.6f)
+            torchFlicker = 0.6f;
+        if (torchFlicker > 1.25f)
+            torchFlicker = 1.25f;
 
         glUniform3fv(glGetUniformLocation(shader3D, "torchColor"), 1, glm::value_ptr(torchColor));
         glUniform1f(glGetUniformLocation(shader3D, "torchFlicker"), torchFlicker);
@@ -302,9 +344,11 @@ int main() {
 
         glUseProgram(shaderSSAO);
         // Bind input textures
-        glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
         glUniform1i(glGetUniformLocation(shaderSSAO, "colorTex"), 0);
-        glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, depthTexture);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, depthTexture);
         glUniform1i(glGetUniformLocation(shaderSSAO, "depthTex"), 1);
         // Camera projection range (matches projection used for 3D pass)
         glUniform1f(glGetUniformLocation(shaderSSAO, "projNear"), 0.05f);
@@ -332,26 +376,28 @@ int main() {
         float screenAspect = (float)display.renderW / (float)display.renderH;
         glUniform1f(glGetUniformLocation(shader2D, "screenAspect"), screenAspect);
 
-        glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, aoTexture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, aoTexture);
         glBindVertexArray(quadVAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // minimap already rendered into low-res buffer earlier; no overlay here
 
-        #ifdef GAME_DEBUG
+#ifdef GAME_DEBUG
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
         // Render developer debug window if toggled active
-        if (debugActive) {
+        if (debugActive)
+        {
             DevPanel::get().draw(&debugActive);
         }
 
         // End ImGui Frame & Render
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        #endif
+#endif
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -363,9 +409,12 @@ int main() {
     // Full memory cleanup before exit
     minimap.cleanup();
     textures.cleanup();
-    glDeleteVertexArrays(1, &wallVAO); glDeleteBuffers(1, &wallVBO);
-    glDeleteVertexArrays(1, &floorVAO); glDeleteBuffers(1, &floorVBO);
-    glDeleteVertexArrays(1, &quadVAO); glDeleteBuffers(1, &quadVBO);
+    glDeleteVertexArrays(1, &wallVAO);
+    glDeleteBuffers(1, &wallVBO);
+    glDeleteVertexArrays(1, &floorVAO);
+    glDeleteBuffers(1, &floorVBO);
+    glDeleteVertexArrays(1, &quadVAO);
+    glDeleteBuffers(1, &quadVBO);
 
     // delete framebuffers/textures
     glDeleteFramebuffers(1, &framebuffer);
@@ -374,7 +423,9 @@ int main() {
     glDeleteTextures(1, &aoTexture);
     glDeleteTextures(1, &depthTexture);
 
-    glDeleteProgram(shader3D); glDeleteProgram(shader2D); glDeleteProgram(shaderSSAO);
+    glDeleteProgram(shader3D);
+    glDeleteProgram(shader2D);
+    glDeleteProgram(shaderSSAO);
     glfwTerminate();
     return 0;
 }

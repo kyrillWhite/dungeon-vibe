@@ -1,6 +1,6 @@
 #pragma once
 
-const char* fragmentShaderSource = R"glsl(
+const char *fragmentShaderSource = R"glsl(
     #version 330 core
     out vec4 FragColor;
     

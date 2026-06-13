@@ -2,7 +2,8 @@
 
 #include <GL/glew.h>
 
-inline unsigned int compileShaderPipeline(const char* vSource, const char* fSource) {
+inline unsigned int compileShaderPipeline(const char *vSource, const char *fSource)
+{
 	unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vs, 1, &vSource, NULL);
 	glCompileShader(vs);
@@ -10,9 +11,10 @@ inline unsigned int compileShaderPipeline(const char* vSource, const char* fSour
 	glShaderSource(fs, 1, &fSource, NULL);
 	glCompileShader(fs);
 	unsigned int program = glCreateProgram();
-	glAttachShader(program, vs); glAttachShader(program, fs);
+	glAttachShader(program, vs);
+	glAttachShader(program, fs);
 	glLinkProgram(program);
-	glDeleteShader(vs); glDeleteShader(fs);
+	glDeleteShader(vs);
+	glDeleteShader(fs);
 	return program;
 }
-

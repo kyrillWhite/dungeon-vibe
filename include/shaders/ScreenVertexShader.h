@@ -1,7 +1,7 @@
 #pragma once
 
 // Screen vertex shader for quad (used in SSAO / upscale passes)
-const char* screenVertexShaderSource = R"glsl(
+const char *screenVertexShaderSource = R"glsl(
     #version 330 core
     layout (location = 0) in vec2 aPos;
     // location 1 used for either texcoords (fullscreen quad) or color (minimap)
