@@ -47,6 +47,7 @@ inline float ANISOTROPY_LEVEL         = 4.0f;
 inline int   USE_DITHER               = 1;
 inline float DITHER_AMOUNT            = 0.06f;
 inline int   DITHER_PALETTE           = 32768;
+inline float PLAYER_SPEED             = 1.5f;
 
 // Custom validation routines
 inline void validatePalette() {
@@ -70,7 +71,8 @@ inline const std::vector<Setting>& getRegistry() {
         Setting("ANISOTROPY_LEVEL",          &ANISOTROPY_LEVEL,          1.0f,    16.0f,    "anisotropy level"),
         Setting("USE_DITHER",                &USE_DITHER,                0,       1,        "use dither (0/1)"),
         Setting("DITHER_AMOUNT",             &DITHER_AMOUNT,             0.0f,    0.5f,     "dither amount"),
-        Setting("DITHER_PALETTE",            &DITHER_PALETTE,            256,     32768,    "dither palette", validatePalette)
+        Setting("DITHER_PALETTE",            &DITHER_PALETTE,            256,     32768,    "dither palette", validatePalette),
+        Setting("PLAYER_SPEED",              &PLAYER_SPEED,              0.01f,   8.0f,     "player speed"),
     };
     return registry;
 }

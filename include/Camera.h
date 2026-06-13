@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Settings.h"
 #include "Display.h" // For access to global MAP_SIZE
 
 struct Camera {
@@ -29,7 +30,7 @@ struct Camera {
     void processInput(GLFWwindow* window, float deltaTime, int grid[MAP_SIZE][MAP_SIZE]) {
         if (!isCursorLocked) return;
 
-        float speed = 4.0f * deltaTime;
+        float speed = Settings::PLAYER_SPEED * deltaTime;
         glm::vec3 frontXZ = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
         glm::vec3 rightXZ = glm::normalize(glm::cross(frontXZ, up));
         
