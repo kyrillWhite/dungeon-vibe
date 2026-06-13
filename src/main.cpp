@@ -37,7 +37,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(display.winW, display.winH, "Dungeon & Transparent HUD Map", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(display.winW, display.winH, "Dungeon Vibe", NULL, NULL);
     if (!window) { glfwTerminate(); return -1; }
 
     glfwMakeContextCurrent(window);
