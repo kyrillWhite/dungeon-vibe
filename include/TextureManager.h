@@ -3,14 +3,14 @@
 
 #include <GL/glew.h>
 #include <iostream>
+#include <map>
 
 // Include stb_image implementation only in this file
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 struct TextureManager {
-    unsigned int wallTexture;
-    unsigned int floorTexture;
+    std::map<std::string, unsigned int> textures;
 
     unsigned int loadPNG(const char* filename) {
         unsigned int textureID;
@@ -66,18 +66,20 @@ struct TextureManager {
     }
 
     void init() {
-        // Load PNG files
-        wallTexture = loadPNG("textures/wall.png");
-        floorTexture = loadPNG("textures/floor.png");
+        textures["wall"] = loadPNG("textures/wall.png");
+        textures["floor"] = loadPNG("textures/floor.png");
 
-        if (wallTexture == 0 || floorTexture == 0) {
-            std::cerr << "[WARNING] Check that wall.png and floor.png exist in the working directory!" << std::endl;
+        for (const auto& [name, id] : textures) {
+            if (id == 0) {
+                std::cerr << "[WARNING] Can't load " << name << " texture!" << std::endl;
+            }
         }
     }
 
     void cleanup() {
-        glDeleteTextures(1, &wallTexture);
-        glDeleteTextures(1, &floorTexture);
+        for (const auto& [name, id] : textures) {
+            glDeleteTextures(1, &id);
+        }
     }
 };
 

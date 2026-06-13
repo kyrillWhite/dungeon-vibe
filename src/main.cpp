@@ -12,7 +12,7 @@
 #include "Display.h"
 #include "Map.h"
 #include "Minimap.h"
-#include "Textures.h"
+#include "TextureManager.h"
 #include "Settings.h"
 #include "Input.h"
 #include "ShaderUtils.h"
@@ -104,9 +104,9 @@ int main() {
             float aniso = Settings::ANISOTROPY_LEVEL;
             if (aniso > maxAniso) aniso = maxAniso;
             if (aniso < 1.0f) aniso = 1.0f;
-            glBindTexture(GL_TEXTURE_2D, textures.wallTexture);
+            glBindTexture(GL_TEXTURE_2D, textures.textures["wall"]);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
-            glBindTexture(GL_TEXTURE_2D, textures.floorTexture);
+            glBindTexture(GL_TEXTURE_2D, textures.textures["floor"]);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
             glBindTexture(GL_TEXTURE_2D, 0);
         }
@@ -253,14 +253,14 @@ int main() {
 
         // Draw wall geometry
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures.wallTexture);
+        glBindTexture(GL_TEXTURE_2D, textures.textures["wall"]);
         glUniform1i(glGetUniformLocation(shader3D, "texSampler"), 0);
         glBindVertexArray(wallVAO);
         glDrawArrays(GL_TRIANGLES, 0, dungeon.wallVertices.size() / 6);
 
         // Draw floor and ceiling
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures.floorTexture);
+        glBindTexture(GL_TEXTURE_2D, textures.textures["floor"]);
         glUniform1i(glGetUniformLocation(shader3D, "texSampler"), 0);
         glBindVertexArray(floorVAO);
         glDrawArrays(GL_TRIANGLES, 0, dungeon.floorCeilVertices.size() / 6);
