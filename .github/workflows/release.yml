@@ -12,7 +12,7 @@ jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install deps
         run: sudo apt-get update && sudo apt-get install -y build-essential g++ libgl1-mesa-dev libglew-dev libglfw3-dev libglm-dev zip
       - name: Build
@@ -28,7 +28,7 @@ jobs:
           tar -czf "$NAME" -C release .
           mv "$NAME" release/
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ubuntu-build
           path: release/*.tar.gz
@@ -36,7 +36,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup MSYS2 + mingw
         uses: msys2/setup-msys2@v2
         with:
@@ -69,7 +69,7 @@ jobs:
           cd ..
           mv "$ZIPNAME" release/
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-build
           path: release/*.zip
@@ -80,14 +80,14 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Download ubuntu artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ubuntu-build
           path: artifacts/ubuntu-build
       - name: Download windows artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: windows-build
           path: artifacts/windows-build
