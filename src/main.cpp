@@ -26,8 +26,6 @@
 #include "Settings.h"
 #include "ShaderUtils.h"
 
-bool debugActive = false;
-
 int main()
 {
     auto window = std::make_shared<Window>();
@@ -54,50 +52,9 @@ int main()
     input->subscribeToMouseMove(std::bind_front(&Camera::processMouse, camera));
     input->subscribeToFramebufferSize(std::bind_front(&Display::calculateScale, display));
     input->subscribeToKey([camera, window](int key, int scancode, int action, int mods)
-                          {
-                              if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-                              {
-                                  camera->isCursorLocked = !camera->isCursorLocked;
-                                  if (camera->isCursorLocked)
-                                  {
-                                      glfwSetInputMode(window->getWindowPtr(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                                      camera->firstMouse = true;
-                                  }
-                                  else
-                                  {
-                                      glfwSetInputMode(window->getWindowPtr(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-                                  }
-                              }
-
-#ifdef GAME_DEBUG
-                              // Toggle debig visibility with grave/backtick accent key
-                              if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS)
-                              {
-                                  debugActive = !debugActive;
-                                  if (debugActive)
-                                  {
-                                      glfwSetInputMode(window->getWindowPtr(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-                                      camera->isCursorLocked = false;
-                                  }
-                                  else
-                                  {
-                                      glfwSetInputMode(window->getWindowPtr(), GLFW_CURSOR, camera->isCursorLocked ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-                                  }
-                              }
-#endif
-                          });
-
+                          { window->handleKey(camera, key, action); });
     input->subscribeToMouseButton([camera, window](int button, int action, int mods)
-                                  {
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-    {
-        if (!camera->isCursorLocked && !debugActive)
-        {
-            camera->isCursorLocked = true;
-            glfwSetInputMode(window->getWindowPtr(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            camera->firstMouse = true;
-        }
-    } });
+                                  { window->handleMouseButton(camera, button, action); });
 
     dungeon->generate();
     camera->pos = dungeon->spawnPos;
@@ -425,9 +382,9 @@ int main()
         ImGui::NewFrame();
 
         // Render developer debug window if toggled active
-        if (debugActive)
+        if (window->debugActive)
         {
-            DevPanel::get().draw(&debugActive);
+            DevPanel::get().draw(&window->debugActive);
         }
 
         // End ImGui Frame & Render

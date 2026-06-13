@@ -2,9 +2,13 @@
 
 #include <GLFW/glfw3.h>
 
+#include "Camera.h"
+
 class Window
 {
 public:
+    bool debugActive = false;
+
     int init(int width, int height)
     {
         if (!glfwInit())
@@ -57,6 +61,63 @@ public:
         return window;
     }
 
+    void handleKey(std::shared_ptr<Camera> camera, int key, int action)
+    {
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        {
+            camera->isCursorLocked = !camera->isCursorLocked;
+            if (camera->isCursorLocked)
+            {
+                disableCursor();
+                camera->firstMouse = true;
+            }
+            else
+            {
+                enableCursor();
+            }
+        }
+
+#ifdef GAME_DEBUG
+        // Toggle debug visibility with grave/backtick accent key
+        if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS)
+        {
+            debugActive = !debugActive;
+            if (debugActive)
+            {
+                enableCursor();
+                camera->isCursorLocked = false;
+            }
+            else
+            {
+                camera->isCursorLocked ? disableCursor() : enableCursor();
+            }
+        }
+#endif
+    }
+
+    void handleMouseButton(std::shared_ptr<Camera> camera, int button, int action)
+    {
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        {
+            if (!camera->isCursorLocked && !debugActive)
+            {
+                camera->isCursorLocked = true;
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                camera->firstMouse = true;
+            }
+        }
+    }
+
 private:
     GLFWwindow *window;
+
+    void enableCursor()
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+
+    void disableCursor()
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
 };
