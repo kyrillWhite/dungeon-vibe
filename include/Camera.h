@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 #include "Settings.h"
 #include "Display.h" // For access to global MAP_SIZE
 
@@ -29,7 +30,7 @@ struct Camera
     }
 
     // Pass the actual MAP_SIZE array size instead of static [16][16]
-    void processInput(GLFWwindow *window, float deltaTime, int grid[MAP_SIZE][MAP_SIZE])
+    void processInput(bool _up, bool _down, bool _left, bool _right, float deltaTime, int grid[MAP_SIZE][MAP_SIZE])
     {
         if (!isCursorLocked)
             return;
@@ -40,13 +41,13 @@ struct Camera
 
         glm::vec3 moveDir(0.0f);
 
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        if (_up)
             moveDir += frontXZ;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        if (_down)
             moveDir -= frontXZ;
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        if (_left)
             moveDir -= rightXZ;
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        if (_right)
             moveDir += rightXZ;
 
         if (glm::length(moveDir) <= 0.0f)

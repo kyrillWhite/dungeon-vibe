@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <iostream>
+
 #include "Display.h"
 #include "Camera.h"
 #include "Settings.h"

@@ -1,3 +1,10 @@
+#ifdef GAME_DEBUG
+#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
+
+#include "DevPanel.h"
+#endif
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -7,6 +14,7 @@
 #include <random>
 #include <ctime>
 
+#include "Window.h"
 #include "Shaders.h"
 #include "Camera.h"
 #include "Display.h"
@@ -14,15 +22,7 @@
 #include "Minimap.h"
 #include "TextureManager.h"
 #include "Settings.h"
-#include "Input.h"
 #include "ShaderUtils.h"
-
-#ifdef GAME_DEBUG
-#include <imgui/backends/imgui_impl_glfw.h>
-#include <imgui/backends/imgui_impl_opengl3.h>
-
-#include "DevPanel.h"
-#endif
 
 Display display;
 Camera camera;
@@ -30,44 +30,20 @@ Map dungeon;
 Minimap minimap;
 TextureManager textures;
 
-// Callbacks and shader helpers moved to separate modules (Input.* and ShaderUtils.*)
-
 int main()
 {
-    if (!glfwInit())
-        return -1;
+    Window window;
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    GLFWwindow *window = glfwCreateWindow(display.winW, display.winH, "Dungeon Vibe", NULL, NULL);
-    if (!window)
+    if (window.init(display.winW, display.winH))
     {
-        glfwTerminate();
         return -1;
     }
 
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetKeyCallback(window, key_callback);
-    glfwSetMouseButtonCallback(window, mouse_button_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
+    {
         return -1;
-
-#ifdef GAME_DEBUG
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    (void)io;
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 130");
-#endif
+    }
 
     dungeon.generate();
     camera.pos = dungeon.spawnPos;
@@ -199,13 +175,19 @@ int main()
 
     float deltaTime = 0.0f, lastFrame = 0.0f;
 
-    while (!glfwWindowShouldClose(window))
+    while (!window.isShouldClose())
     {
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        camera.processInput(window, deltaTime, dungeon.grid);
+        camera.processInput(
+            window.isKeyPressed(GLFW_KEY_W),
+            window.isKeyPressed(GLFW_KEY_S),
+            window.isKeyPressed(GLFW_KEY_A),
+            window.isKeyPressed(GLFW_KEY_D),
+            deltaTime,
+            dungeon.grid);
 
         // --- FOG OF WAR CALCULATION FOR MINIMAP ---
         {
@@ -239,7 +221,7 @@ int main()
             }
         }
 
-        bool isTabPressed = (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS);
+        bool isTabPressed = window.isKeyPressed(GLFW_KEY_TAB);
 
         // --- STAGE 1: RENDER 3D TO LOW RESOLUTION ---
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -399,7 +381,7 @@ int main()
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 #endif
 
-        glfwSwapBuffers(window);
+        window.swapBuffers();
         glfwPollEvents();
     }
 
